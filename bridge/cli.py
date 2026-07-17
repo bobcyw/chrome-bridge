@@ -99,6 +99,9 @@ def parse_args(argv):
 
 HELP_TEXT = """Usage: chrome-bridge <cmd> [key=value ...]
 
+Server:
+  serve                                 - Start the WebSocket bridge server
+
 Tab Management:
   new_tab     url=...                    - Open new tab
   navigate    url=... [tab_id=..]        - Navigate existing tab
@@ -166,6 +169,17 @@ def main():
         sys.exit(0)
 
     cmd = sys.argv[1]
+
+    # Built-in: serve — start the WebSocket bridge server
+    if cmd == 'serve':
+        from bridge.server import main as server_main
+        import asyncio
+        try:
+            asyncio.run(server_main())
+        except KeyboardInterrupt:
+            print("\n[*] Server stopped.")
+        sys.exit(0)
+
     kwargs = parse_args(sys.argv[2:])
 
     result = send_cmd(cmd, **kwargs)

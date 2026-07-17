@@ -2,9 +2,9 @@
 name: chrome-bridge
 description: >-
   Universal Chrome browser control. Use when you need to operate a browser (open sites, click buttons,
-  type text, take screenshots, scrape page content), fill forms, upload files, handle dialogs,
-  or access data from logged-in websites.
-  Triggers: browser, Chrome, open webpage, click, type, screenshot, tab, page content, automation.
+  type text, take screenshots, scrape page content), fill forms, handle file uploads, manage dialogs,
+  read/write cookies and storage, or access data from logged-in websites.
+  Triggers: browser, Chrome, open webpage, click, type, screenshot, tab, page content, automation, form, dialog.
 ---
 
 # Chrome Bridge — Browser Control Skill

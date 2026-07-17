@@ -1,65 +1,56 @@
 # Claude Code Setup
 
-This guide explains how to integrate Chrome Bridge with Claude Code.
+Chrome Bridge integrates with Claude Code automatically via `CLAUDE.md`.
 
-## Step 1: Install Chrome Bridge
+## Automatic (Recommended)
+
+Just open the Chrome Bridge project in Claude Code. The `CLAUDE.md` file at the repo root is loaded automatically and gives Claude everything it needs to control your browser.
 
 ```bash
-# Clone the repo
-git clone https://github.com/YOUR_USERNAME/chrome-bridge.git ~/chrome-bridge
-
-# Install dependencies
 cd ~/chrome-bridge
-pip install -r requirements.txt
+claude
 ```
 
-## Step 2: Load the Extension
+Now ask Claude in natural language:
+- "Open example.com and tell me what's on the page"
+- "Log in to GitHub with username X and password Y"
+- "Search for 'python' on Google and give me the top 5 results"
 
-1. Open `chrome://extensions` in Chrome
-2. Enable **Developer mode**
-3. Click **Load unpacked** → select `~/chrome-bridge/extension/`
-4. Click the Chrome Bridge icon in the toolbar
+## Manual Skill Installation (optional)
 
-## Step 3: Start the Bridge Server
-
-```bash
-bash ~/chrome-bridge/scripts/start_bridge.sh
-```
-
-## Step 4: Install the Skill
-
-Copy the skill definition into your project's `.claude/skills/` directory:
-
-```bash
-mkdir -p .claude/skills/chrome-bridge
-cp ~/chrome-bridge/docs/SKILL.md .claude/skills/chrome-bridge/SKILL.md
-```
-
-Or install it globally for all projects:
+If you want the skill available globally across all projects:
 
 ```bash
 mkdir -p ~/.claude/skills/chrome-bridge
 cp ~/chrome-bridge/docs/SKILL.md ~/.claude/skills/chrome-bridge/SKILL.md
 ```
 
-## Step 5: Verify
+Or for a single project:
 
-Open Claude Code and type:
-
+```bash
+mkdir -p .claude/skills/chrome-bridge
+cp ~/chrome-bridge/docs/SKILL.md .claude/skills/chrome-bridge/SKILL.md
 ```
-open https://www.example.com and tell me the page title
+
+## Prerequisites
+
+Before Claude can control the browser:
+
+```bash
+# 1. Start the bridge server
+cd ~/chrome-bridge
+python bridge/cli.py serve &
+
+# 2. Verify it's running
+python bridge/cli.py ping
+# → {"ok": true, "pong": true}
 ```
 
-Claude should use the `chrome-bridge` skill automatically.
+Make sure the Chrome Extension is loaded and connected.
 
 ## Configuration
 
-If you installed Chrome Bridge in a non-default location, edit `SKILL.md` and update the paths:
-
-```bash
-# Find/replace in SKILL.md:
-~/chrome-bridge/  →  /your/actual/path/to/chrome-bridge/
-```
+If you installed Chrome Bridge in a non-default location, edit `CLAUDE.md` and update the paths from `python bridge/cli.py` to the full path.
 
 ## Troubleshooting
 
@@ -67,4 +58,4 @@ If you installed Chrome Bridge in a non-default location, edit `SKILL.md` and up
 
 **"No Chrome extension connected":** Click the Chrome Bridge icon in the Chrome toolbar, then retry.
 
-**Server not running:** Run `bash ~/chrome-bridge/scripts/start_bridge.sh` before using the skill.
+**Server not running:** Run `python bridge/cli.py serve` before using the skill.
