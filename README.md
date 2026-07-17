@@ -6,14 +6,13 @@
 
 ```bash
 # 1. Install
-git clone https://github.com/YOUR_USERNAME/chrome-bridge.git
-cd chrome-bridge
-pip install -e .
+pip install chrome-bridge
 
 # 2. Start the bridge server (background)
 chrome-bridge serve --background
 
 # 3. Load the Chrome Extension
+#    Clone the repo: git clone https://github.com/bobcyw/chrome-bridge.git
 #    Open chrome://extensions → Developer mode → Load unpacked → select extension/
 #    → Click the Chrome Bridge icon in the toolbar to activate
 
@@ -25,7 +24,7 @@ chrome-bridge new_tab url=https://www.example.com
 chrome-bridge get_content
 ```
 
-**Windows users**: Double-click `scripts\start_bridge.bat` to start everything with one click.
+**Windows users**: Clone the repo and double-click `scripts\start_bridge.bat` to start everything with one click.
 
 ## Architecture
 
@@ -190,11 +189,16 @@ See [CLAUDE.md](CLAUDE.md) for the built-in skill definition, or [docs/claude-co
 ## Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/chrome-bridge.git
+# From PyPI (recommended)
+pip install chrome-bridge
+
+# Or from source
+git clone https://github.com/bobcyw/chrome-bridge.git
 cd chrome-bridge
 pip install -e .
-# chrome-bridge command now available globally
 ```
+
+The `chrome-bridge` command is available globally after install.
 
 ### Load the Chrome Extension
 
