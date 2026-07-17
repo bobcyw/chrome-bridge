@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 # Chrome Bridge — status check script
-# Shows server status, extension connection, and quick test
 # Usage: bash status_bridge.sh
 
-# Determine script and project directories
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 CLI_PATH="$PROJECT_DIR/bridge/cli.py"
@@ -16,18 +14,25 @@ echo "  Chrome Bridge — Status"
 echo "=========================================="
 echo ""
 
-# 1. Check server process
-PORT_CHECK=$(netstat -ano 2>/dev/null | grep ":9876.*LISTEN" | head -1)
-if [ -n "$PORT_CHECK" ]; then
-  echo "[OK] Bridge server: RUNNING"
-  echo "  $PORT_CHECK"
+# 1. Check HTTP API
+HTTP_CHECK=$(netstat -ano 2>/dev/null | grep ":9877.*LISTEN" | head -1)
+if [ -n "$HTTP_CHECK" ]; then
+  echo "[OK] HTTP API: http://127.0.0.1:9877"
 else
-  echo "[FAIL] Bridge server: NOT RUNNING"
+  echo "[FAIL] HTTP API: NOT RUNNING"
   echo "  Start it with: bash $SCRIPT_DIR/start_bridge.sh"
   exit 1
 fi
 
-# 2. Check extension connection
+# 2. Check WebSocket
+WS_CHECK=$(netstat -ano 2>/dev/null | grep ":9876.*LISTEN" | head -1)
+if [ -n "$WS_CHECK" ]; then
+  echo "[OK] WebSocket: ws://127.0.0.1:9876"
+else
+  echo "[WARN] WebSocket: NOT LISTENING"
+fi
+
+# 3. Check extension connection
 ESTABLISHED=$(netstat -ano 2>/dev/null | grep ":9876.*ESTABLISHED" | head -1)
 if [ -n "$ESTABLISHED" ]; then
   echo "[OK] Chrome extension: CONNECTED"
@@ -37,10 +42,9 @@ else
   echo ""
   echo "  Log tail:"
   tail -5 "$LOG_FILE" 2>/dev/null
-  exit 0
 fi
 
-# 3. Send a test ping
+# 4. Send a test ping
 echo ""
 echo "[TEST] Sending ping..."
 RESULT=$("$PYTHON" "$CLI_PATH" ping 2>&1)
@@ -51,12 +55,5 @@ else
   echo "  $RESULT"
 fi
 
-# 4. List tabs
 echo ""
-echo "[TEST] Listing tabs..."
-"$PYTHON" "$CLI_PATH" list_tabs 2>&1 | head -30
-
-echo ""
-echo "=========================================="
-echo "  All systems go!"
 echo "=========================================="

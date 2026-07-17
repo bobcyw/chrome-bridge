@@ -2,66 +2,69 @@
 CLI tool for sending browser commands through the Chrome Bridge.
 Usage: python bridge/cli.py <cmd> [key=value ...]
        python -m bridge.cli <cmd> [key=value ...]
+       chrome-bridge <cmd> [key=value ...]
+       chrome-bridge serve           (start the bridge server)
 
 Examples:
-  python bridge/cli.py new_tab url=https://www.example.com
-  python bridge/cli.py list_tabs
-  python bridge/cli.py navigate tab_id=123 url=https://www.example.com
-  python bridge/cli.py click selector=.login-btn
-  python bridge/cli.py get_content
-  python bridge/cli.py hover selector=.menu-item
-  python bridge/cli.py press_key key=ArrowDown
+  chrome-bridge new_tab url=https://www.example.com
+  chrome-bridge list_tabs
+  chrome-bridge click selector=.login-btn
+  chrome-bridge get_content
+  chrome-bridge hover selector=.menu-item
+  chrome-bridge press_key key=ArrowDown
 """
 import json
 import os
 import sys
-import time
+import urllib.request
+import urllib.error
 
-# Force UTF-8 output to handle Chinese characters and special Unicode
+# Ensure project root is on sys.path for direct script execution
+_PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _PROJECT_DIR not in sys.path:
+    sys.path.insert(0, _PROJECT_DIR)
+
+# Force UTF-8 output
 if sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 if sys.stderr.encoding != 'utf-8':
     sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
-# Project root is one level up from the bridge/ package
-PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-RUNTIME_DIR = os.path.join(PROJECT_DIR, 'runtime')
-CMD_FILE = os.path.join(RUNTIME_DIR, '.bridge_cmd.json')
-RESULT_FILE = os.path.join(RUNTIME_DIR, '.bridge_result.json')
+# Bridge server HTTP endpoint
+BRIDGE_URL = os.environ.get('CHROME_BRIDGE_URL', 'http://127.0.0.1:9877/cmd')
 
 
 def send_cmd(cmd, **kwargs):
-    os.makedirs(RUNTIME_DIR, exist_ok=True)
-    # Clear old result
-    with open(RESULT_FILE, 'w', encoding='utf-8') as f:
-        f.write('')
+    """Send a command to the bridge server via HTTP POST and return the result."""
 
-    # Support js_file parameter: read JS content from file (avoids Windows command-line length limits)
+    # Support js_file parameter: read JS content from file
     if 'js_file' in kwargs:
         js_path = kwargs.pop('js_file')
         with open(js_path, 'r', encoding='utf-8') as f:
             kwargs['js'] = f.read()
 
-    # Write command
-    cmd_data = {"cmd": cmd, "args": kwargs}
-    with open(CMD_FILE, 'w', encoding='utf-8') as f:
-        json.dump(cmd_data, f, ensure_ascii=False)
+    payload = json.dumps({"cmd": cmd, "args": kwargs}).encode('utf-8')
 
-    # Wait for result (poll with timeout)
-    timeout = 60  # seconds
-    interval = 0.5
-    elapsed = 0
-    while elapsed < timeout:
-        if os.path.exists(RESULT_FILE):
-            with open(RESULT_FILE, 'r', encoding='utf-8') as f:
-                content = f.read().strip()
-            if content:
-                result = json.loads(content)
-                return result
-        time.sleep(interval)
-        elapsed += interval
+    req = urllib.request.Request(
+        BRIDGE_URL,
+        data=payload,
+        headers={'Content-Type': 'application/json'},
+        method='POST',
+    )
 
-    return {"ok": False, "error": "Timeout waiting for result"}
+    try:
+        with urllib.request.urlopen(req, timeout=65) as resp:
+            return json.loads(resp.read().decode('utf-8'))
+    except urllib.error.HTTPError as e:
+        try:
+            body = json.loads(e.read().decode('utf-8'))
+            return body
+        except Exception:
+            return {"ok": False, "error": f"Server error ({e.code})"}
+    except urllib.error.URLError as e:
+        return {"ok": False, "error": f"Cannot connect to bridge server: {e.reason}"}
+    except json.JSONDecodeError:
+        return {"ok": False, "error": "Invalid response from server"}
 
 
 def parse_args(argv):

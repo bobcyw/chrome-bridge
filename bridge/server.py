@@ -1,143 +1,201 @@
 """
-Chrome Bridge Server - WebSocket relay between CLI and Chrome Extension.
-Monitors a command file and forwards commands to connected Chrome extensions.
+Chrome Bridge Server — HTTP API + WebSocket relay.
+
+Two ports:
+  HTTP  : http://127.0.0.1:9877/cmd — CLI sends commands here
+  WebSocket: ws://127.0.0.1:9876    — Chrome Extension connects here
 
 Usage: python -m bridge.server
        python bridge/server.py
+       chrome-bridge serve
 """
 import asyncio
 import json
 import os
 import sys
+import threading
 import time
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 import websockets
 
-# Force UTF-8 output to handle Chinese characters and special Unicode
+# Force UTF-8 output
 if hasattr(sys.stdout, 'reconfigure') and sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 if hasattr(sys.stderr, 'reconfigure') and sys.stderr.encoding != 'utf-8':
     sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
-# Project root is one level up from the bridge/ package
-PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-RUNTIME_DIR = os.path.join(PROJECT_DIR, 'runtime')
-CMD_FILE = os.path.join(RUNTIME_DIR, '.bridge_cmd.json')
-RESULT_FILE = os.path.join(RUNTIME_DIR, '.bridge_result.json')
+# ── Configuration ────────────────────────────────────────────────
 
-connected_ws = []
-pending_responses = {}
+WS_PORT = 9876
+HTTP_PORT = 9877
+RESPONSE_TIMEOUT = 30  # seconds
+
+# ── Shared State ─────────────────────────────────────────────────
+
+_lock = threading.Lock()
+connected_ws = []          # list of WebSocket connections
+pending = {}               # cmd_id -> {"event": threading.Event, "result": dict}
+
+_event_loop = None         # asyncio event loop reference (set after start)
 
 
-async def handler(websocket):
-    connected_ws.append(websocket)
+# ── WebSocket (Extension) ───────────────────────────────────────
+
+async def ws_handler(websocket):
+    global connected_ws
+    with _lock:
+        connected_ws.append(websocket)
     print(f"[+] Extension connected ({len(connected_ws)} total)", flush=True)
+
     try:
         async for message in websocket:
             try:
                 data = json.loads(message)
             except json.JSONDecodeError:
                 continue
+
             msg_id = data.get('id')
-            if msg_id and msg_id in pending_responses:
-                future = pending_responses[msg_id]
-                if not future.done():
+            if msg_id:
+                with _lock:
+                    entry = pending.pop(msg_id, None)
+                if entry:
                     result = data.get('data', data)
-                    future.set_result(result)
-                continue
+                    entry["result"] = result
+                    entry["event"].set()
+                    continue
+
             if data.get('cmd') == 'ping':
                 continue
     except Exception as e:
-        print(f"[!] Connection error: {e}", flush=True)
+        print(f"[!] WS connection error: {e}", flush=True)
     finally:
-        if websocket in connected_ws:
-            connected_ws.remove(websocket)
+        with _lock:
+            if websocket in connected_ws:
+                connected_ws.remove(websocket)
         print(f"[-] Extension disconnected", flush=True)
 
 
-async def file_watcher():
-    os.makedirs(RUNTIME_DIR, exist_ok=True)
-    for f in [CMD_FILE, RESULT_FILE]:
-        if not os.path.exists(f):
-            with open(f, 'w') as fh:
-                fh.write('')
-    last_content = ''
-    print("[*] File watcher started", flush=True)
+async def _send_to_extension(msg: str):
+    """Send a message to the first connected extension. Thread-safe via call_soon_threadsafe."""
+    with _lock:
+        clients = list(connected_ws)
+    if not clients:
+        return False
+    try:
+        await clients[0].send(msg)
+        return True
+    except Exception:
+        return False
 
-    while True:
+
+# ── HTTP (CLI) ──────────────────────────────────────────────────
+
+class CmdHandler(BaseHTTPRequestHandler):
+
+    def log_message(self, format, *args):
+        pass  # suppress access logs
+
+    def do_POST(self):
+        if self.path != '/cmd':
+            self.send_error(404)
+            return
+
+        # Read request body
         try:
-            if not os.path.exists(CMD_FILE):
-                await asyncio.sleep(0.3)
-                continue
-            current_size = os.path.getsize(CMD_FILE)
-            if current_size == 0:
-                await asyncio.sleep(0.3)
-                continue
-            with open(CMD_FILE, 'r', encoding='utf-8') as f:
-                content = f.read().strip()
-            if not content or content == last_content:
-                await asyncio.sleep(0.3)
-                continue
-            last_content = content
-            try:
-                cmd_data = json.loads(content)
-            except json.JSONDecodeError:
-                await asyncio.sleep(0.3)
-                continue
-            with open(CMD_FILE, 'w', encoding='utf-8') as f:
-                f.write('')
-            last_content = ''
-            cmd = cmd_data.get('cmd', '')
-            args = cmd_data.get('args', {})
-            print(f"[>] {cmd} {json.dumps(args, ensure_ascii=False)[:80]}", flush=True)
-
-            if not connected_ws:
-                result = {"ok": False, "error": "No Chrome extension connected"}
-                with open(RESULT_FILE, 'w', encoding='utf-8') as f:
-                    json.dump(result, f, ensure_ascii=False)
-                print(f"[!] No extension connected", flush=True)
-                continue
-
-            cmd_id = f"cmd_{int(time.time() * 1000)}"
-            future = asyncio.get_event_loop().create_future()
-            pending_responses[cmd_id] = future
-            msg = json.dumps({"id": cmd_id, "cmd": cmd, "args": args})
-            ws = connected_ws[0]
-            try:
-                await ws.send(msg)
-                result = await asyncio.wait_for(future, timeout=30)
-                with open(RESULT_FILE, 'w', encoding='utf-8') as f:
-                    json.dump(result, f, ensure_ascii=False)
-                print(f"[<] OK: {json.dumps(result, ensure_ascii=False)[:120]}", flush=True)
-            except asyncio.TimeoutError:
-                result = {"ok": False, "error": "Extension response timeout"}
-                with open(RESULT_FILE, 'w', encoding='utf-8') as f:
-                    json.dump(result, f, ensure_ascii=False)
-                print(f"[!] Timeout", flush=True)
-            except Exception as e:
-                result = {"ok": False, "error": str(e)}
-                with open(RESULT_FILE, 'w', encoding='utf-8') as f:
-                    json.dump(result, f, ensure_ascii=False)
-                print(f"[!] Error: {e}", flush=True)
-            finally:
-                pending_responses.pop(cmd_id, None)
+            length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(length).decode('utf-8')
+            cmd_data = json.loads(body)
         except Exception as e:
-            print(f"[!] Watcher error: {e}", flush=True)
-        await asyncio.sleep(0.3)
+            self._reply(400, {"ok": False, "error": f"Invalid request: {e}"})
+            return
+
+        cmd = cmd_data.get('cmd', '')
+        args = cmd_data.get('args', {})
+        cmd_id = f"cmd_{int(time.time() * 1000)}"
+
+        # Check extension is connected
+        with _lock:
+            if not connected_ws:
+                self._reply(503, {"ok": False, "error": "No Chrome extension connected"})
+                return
+
+        # Register pending response
+        event = threading.Event()
+        entry = {"event": event, "result": None}
+        with _lock:
+            pending[cmd_id] = entry
+
+        # Send to extension via asyncio
+        msg = json.dumps({"id": cmd_id, "cmd": cmd, "args": args})
+        future = asyncio.run_coroutine_threadsafe(_send_to_extension(msg), _event_loop)
+
+        try:
+            sent = future.result(timeout=5)
+        except Exception:
+            sent = False
+
+        if not sent:
+            with _lock:
+                pending.pop(cmd_id, None)
+            self._reply(502, {"ok": False, "error": "Failed to send command to extension"})
+            return
+
+        print(f"[>] {cmd} {json.dumps(args, ensure_ascii=False)[:80]}", flush=True)
+
+        # Wait for response
+        if event.wait(timeout=RESPONSE_TIMEOUT):
+            result = entry["result"] or {}
+            self._reply(200, result)
+            print(f"[<] OK: {json.dumps(result, ensure_ascii=False)[:120]}", flush=True)
+        else:
+            with _lock:
+                pending.pop(cmd_id, None)
+            self._reply(504, {"ok": False, "error": "Extension response timeout"})
+            print(f"[!] Timeout: {cmd}", flush=True)
+
+    def do_GET(self):
+        if self.path == '/health':
+            self._reply(200, {"ok": True, "connections": len(connected_ws)})
+        else:
+            self.send_error(404)
+
+    def _reply(self, code: int, data: dict):
+        body = json.dumps(data, ensure_ascii=False).encode('utf-8')
+        self.send_response(code)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Content-Length', len(body))
+        self.end_headers()
+        self.wfile.write(body)
+
+
+# ── Main ────────────────────────────────────────────────────────
+
+def _start_http_server():
+    """Run HTTP server in a daemon thread."""
+    httpd = HTTPServer(('127.0.0.1', HTTP_PORT), CmdHandler)
+    print(f"[*] HTTP API listening on http://127.0.0.1:{HTTP_PORT}", flush=True)
+    httpd.serve_forever()
 
 
 async def main():
+    global _event_loop
+    _event_loop = asyncio.get_running_loop()
+
     print("=" * 50, flush=True)
-    print("  Chrome Bridge Server", flush=True)
-    print(f"  WS:  ws://127.0.0.1:9876", flush=True)
-    print(f"  CMD: {CMD_FILE}", flush=True)
+    print("  Chrome Bridge Server  v4.0", flush=True)
+    print(f"  WS:  ws://127.0.0.1:{WS_PORT}", flush=True)
+    print(f"  HTTP: http://127.0.0.1:{HTTP_PORT}/cmd", flush=True)
     print("=" * 50, flush=True)
 
-    async with websockets.serve(handler, '127.0.0.1', 9876, max_size=10*1024*1024):
-        print("[*] WebSocket server listening", flush=True)
-        watcher = asyncio.create_task(file_watcher())
-        print("[*] Watcher task created", flush=True)
-        await asyncio.Future()
+    # Start HTTP server in a background thread
+    http_thread = threading.Thread(target=_start_http_server, daemon=True)
+    http_thread.start()
+
+    # Start WebSocket server in the main asyncio event loop
+    print("[*] WebSocket server listening", flush=True)
+    async with websockets.serve(ws_handler, '127.0.0.1', WS_PORT, max_size=10 * 1024 * 1024):
+        await asyncio.Future()  # run forever
 
 
 if __name__ == "__main__":
