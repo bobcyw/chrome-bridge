@@ -51,15 +51,21 @@ class TestParseArgs:
         assert result == {"headers": {"Authorization": "Bearer xyz"}}
 
     def test_invalid_json_falls_back_to_string(self):
-        result = cli.parse_args(['data={incomplete'])
+        result = cli.parse_args(["data={incomplete"])
         assert result == {"data": "{incomplete"}
 
     def test_multiple_args(self):
-        result = cli.parse_args([
-            "url=https://example.com", "timeout=30", "secure=true",
-        ])
+        result = cli.parse_args(
+            [
+                "url=https://example.com",
+                "timeout=30",
+                "secure=true",
+            ]
+        )
         assert result == {
-            "url": "https://example.com", "timeout": 30, "secure": True,
+            "url": "https://example.com",
+            "timeout": 30,
+            "secure": True,
         }
 
     def test_value_containing_equals(self):
@@ -82,13 +88,15 @@ class TestSendCmd:
         """send_cmd should POST JSON to the bridge server and return the response."""
         mock_response = io.BytesIO(json.dumps({"ok": True, "pong": True}).encode())
 
-        with patch('urllib.request.urlopen', return_value=mock_response) as mock_urlopen:
+        with patch(
+            "urllib.request.urlopen", return_value=mock_response
+        ) as mock_urlopen:
             result = cli.send_cmd("ping")
             assert result == {"ok": True, "pong": True}
 
             # Verify the request was built correctly
             call_args = mock_urlopen.call_args[0][0]
-            assert call_args.method == 'POST'
+            assert call_args.method == "POST"
             assert call_args.full_url == cli.BRIDGE_URL
             sent_data = json.loads(call_args.data)
             assert sent_data == {"cmd": "ping", "args": {}}
@@ -97,7 +105,9 @@ class TestSendCmd:
         """kwargs should be sent as the 'args' object."""
         mock_response = io.BytesIO(json.dumps({"ok": True, "tabId": 42}).encode())
 
-        with patch('urllib.request.urlopen', return_value=mock_response) as mock_urlopen:
+        with patch(
+            "urllib.request.urlopen", return_value=mock_response
+        ) as mock_urlopen:
             result = cli.send_cmd("new_tab", url="https://example.com")
             assert result == {"ok": True, "tabId": 42}
 
@@ -111,9 +121,13 @@ class TestSendCmd:
         js_file = tmp_path / "script.js"
         js_file.write_text("document.title")
 
-        mock_response = io.BytesIO(json.dumps({"ok": True, "result": "Example"}).encode())
+        mock_response = io.BytesIO(
+            json.dumps({"ok": True, "result": "Example"}).encode()
+        )
 
-        with patch('urllib.request.urlopen', return_value=mock_response) as mock_urlopen:
+        with patch(
+            "urllib.request.urlopen", return_value=mock_response
+        ) as mock_urlopen:
             result = cli.send_cmd("eval", js_file=str(js_file))
             assert result["ok"] is True
 
@@ -125,7 +139,11 @@ class TestSendCmd:
     def test_connection_error(self):
         """If server is not running, return a descriptive error."""
         import urllib.error
-        with patch('urllib.request.urlopen', side_effect=urllib.error.URLError("Connection refused")):
+
+        with patch(
+            "urllib.request.urlopen",
+            side_effect=urllib.error.URLError("Connection refused"),
+        ):
             result = cli.send_cmd("ping")
             assert result["ok"] is False
             assert "Cannot connect" in result["error"]
@@ -133,12 +151,15 @@ class TestSendCmd:
     def test_server_error(self):
         """HTTP errors from the server should be parsed and returned."""
         import urllib.error
-        error_body = json.dumps({"ok": False, "error": "No Chrome extension connected"}).encode()
+
+        error_body = json.dumps(
+            {"ok": False, "error": "No Chrome extension connected"}
+        ).encode()
         fp = io.BytesIO(error_body)
         http_error = urllib.error.HTTPError(
-            'http://127.0.0.1:9877/cmd', 503, 'Service Unavailable', {}, fp
+            "http://127.0.0.1:9877/cmd", 503, "Service Unavailable", {}, fp
         )
-        with patch('urllib.request.urlopen', side_effect=http_error):
+        with patch("urllib.request.urlopen", side_effect=http_error):
             result = cli.send_cmd("ping")
             assert result["ok"] is False
             assert "No Chrome extension connected" in result["error"]
@@ -152,13 +173,32 @@ class TestHelpText:
 
     def test_all_major_commands_documented(self):
         essential_commands = [
-            "new_tab", "navigate", "list_tabs", "find_tab", "close_tab",
-            "click", "click_text", "hover", "double_click", "right_click",
-            "type", "press_key", "scroll", "select_option",
-            "get_content", "get_html", "screenshot", "eval",
-            "wait", "wait_for_element", "handle_dialog",
-            "get_cookies", "get_storage",
-            "ping", "version", "serve",
+            "new_tab",
+            "navigate",
+            "list_tabs",
+            "find_tab",
+            "close_tab",
+            "click",
+            "click_text",
+            "hover",
+            "double_click",
+            "right_click",
+            "type",
+            "press_key",
+            "scroll",
+            "select_option",
+            "get_content",
+            "get_html",
+            "screenshot",
+            "eval",
+            "wait",
+            "wait_for_element",
+            "handle_dialog",
+            "get_cookies",
+            "get_storage",
+            "ping",
+            "version",
+            "serve",
         ]
         for cmd in essential_commands:
             assert cmd in cli.HELP_TEXT, f"Command '{cmd}' missing from help text"

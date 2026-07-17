@@ -13,6 +13,7 @@ Examples:
   chrome-bridge hover selector=.menu-item
   chrome-bridge press_key key=ArrowDown
 """
+
 import json
 import os
 import sys
@@ -25,40 +26,42 @@ if _PROJECT_DIR not in sys.path:
     sys.path.insert(0, _PROJECT_DIR)
 
 # Force UTF-8 output
-if sys.stdout.encoding != 'utf-8':
-    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
-if sys.stderr.encoding != 'utf-8':
-    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+if sys.stdout.encoding != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.stderr.encoding != "utf-8":
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 # Bridge server HTTP endpoint
-BRIDGE_HTTP_PORT = os.environ.get('CHROME_BRIDGE_HTTP_PORT', '19877')
-BRIDGE_URL = os.environ.get('CHROME_BRIDGE_URL', f'http://127.0.0.1:{BRIDGE_HTTP_PORT}/cmd')
+BRIDGE_HTTP_PORT = os.environ.get("CHROME_BRIDGE_HTTP_PORT", "19877")
+BRIDGE_URL = os.environ.get(
+    "CHROME_BRIDGE_URL", f"http://127.0.0.1:{BRIDGE_HTTP_PORT}/cmd"
+)
 
 
 def send_cmd(cmd, **kwargs):
     """Send a command to the bridge server via HTTP POST and return the result."""
 
     # Support js_file parameter: read JS content from file
-    if 'js_file' in kwargs:
-        js_path = kwargs.pop('js_file')
-        with open(js_path, 'r', encoding='utf-8') as f:
-            kwargs['js'] = f.read()
+    if "js_file" in kwargs:
+        js_path = kwargs.pop("js_file")
+        with open(js_path, "r", encoding="utf-8") as f:
+            kwargs["js"] = f.read()
 
-    payload = json.dumps({"cmd": cmd, "args": kwargs}).encode('utf-8')
+    payload = json.dumps({"cmd": cmd, "args": kwargs}).encode("utf-8")
 
     req = urllib.request.Request(
         BRIDGE_URL,
         data=payload,
-        headers={'Content-Type': 'application/json'},
-        method='POST',
+        headers={"Content-Type": "application/json"},
+        method="POST",
     )
 
     try:
         with urllib.request.urlopen(req, timeout=65) as resp:
-            return json.loads(resp.read().decode('utf-8'))
+            return json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         try:
-            body = json.loads(e.read().decode('utf-8'))
+            body = json.loads(e.read().decode("utf-8"))
             return body
         except Exception:
             return {"ok": False, "error": f"Server error ({e.code})"}
@@ -72,16 +75,18 @@ def parse_args(argv):
     """Parse key=value arguments, handling values with = in them."""
     kwargs = {}
     for arg in argv:
-        if '=' in arg:
-            key, value = arg.split('=', 1)
+        if "=" in arg:
+            key, value = arg.split("=", 1)
             # Try to parse numbers and booleans
-            if value.lower() == 'true':
+            if value.lower() == "true":
                 value = True
-            elif value.lower() == 'false':
+            elif value.lower() == "false":
                 value = False
             else:
                 # Try JSON first (arrays/objects)
-                if (value.startswith('[') or value.startswith('{')) and (value.endswith(']') or value.endswith('}')):
+                if (value.startswith("[") or value.startswith("{")) and (
+                    value.endswith("]") or value.endswith("}")
+                ):
                     try:
                         value = json.loads(value)
                     except (json.JSONDecodeError, ValueError):
@@ -91,7 +96,7 @@ def parse_args(argv):
                         continue
                 # Try int first, then float
                 try:
-                    if '.' in value:
+                    if "." in value:
                         value = float(value)
                     else:
                         value = int(value)
@@ -176,18 +181,26 @@ def main():
     cmd = sys.argv[1]
 
     # Built-in: serve — start the WebSocket bridge server
-    if cmd == 'serve':
-        background = '--background' in sys.argv or '-b' in sys.argv
+    if cmd == "serve":
+        background = "--background" in sys.argv or "-b" in sys.argv
         if background:
             # Daemonize: detach from terminal and run in background
-            if sys.platform == 'win32':
+            if sys.platform == "win32":
                 # Windows: use pythonw to run without console
                 import subprocess
-                script = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'server.py')
+
+                script = os.path.join(
+                    os.path.dirname(os.path.abspath(__file__)), "server.py"
+                )
                 subprocess.Popen(
-                    [sys.executable, '-u', script],
-                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                    creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0,
+                    [sys.executable, "-u", script],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    creationflags=(
+                        subprocess.CREATE_NO_WINDOW
+                        if hasattr(subprocess, "CREATE_NO_WINDOW")
+                        else 0
+                    ),
                 )
             else:
                 # Unix: classic double-fork daemon
@@ -201,15 +214,17 @@ def main():
                 if pid2 > 0:
                     sys.exit(0)
                 # Grandchild: the actual server
-                sys.stdout = open(os.devnull, 'w')
-                sys.stderr = open(os.devnull, 'w')
+                sys.stdout = open(os.devnull, "w")
+                sys.stderr = open(os.devnull, "w")
                 from bridge.server import main as server_main
                 import asyncio
+
                 asyncio.run(server_main())
             sys.exit(0)
 
         from bridge.server import main as server_main
         import asyncio
+
         try:
             asyncio.run(server_main())
         except KeyboardInterrupt:

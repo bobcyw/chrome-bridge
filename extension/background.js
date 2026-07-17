@@ -2,9 +2,17 @@
 // Connects to local WebSocket server and executes browser commands
 // Version: 2.0 — added scroll/get_url/press_key/find_element, real screenshot, alarms keepalive
 
-const WS_URL = 'ws://127.0.0.1:19876';
+let WS_URL = 'ws://127.0.0.1:19876';
 let ws = null;
 let reconnectTimer = null;
+{
+  // Read WS port from storage (set via 'set_ws_port' command)
+  chrome.storage.local.get(['ws_port'], (result) => {
+    if (result.ws_port) {
+      WS_URL = `ws://127.0.0.1:${result.ws_port}`;
+    }
+  });
+}
 
 // ==================== WebSocket Connection ====================
 
@@ -53,6 +61,19 @@ function connect() {
           // Reload the extension (service worker restarts, connection drops)
           chrome.runtime.reload();
           result = { ok: true, msg: 'reloading' };
+          break;
+        case 'set_ws_port':
+          // Change WebSocket port and reconnect
+          {
+            const port = args.port || 19876;
+            chrome.storage.local.set({ ws_port: port });
+            WS_URL = `ws://127.0.0.1:${port}`;
+            console.log('[CB] WS port changed to', port, '- reconnecting...');
+            if (ws) { try { ws.close(); } catch(e) {} }
+            ws = null;
+            connect();
+            result = { ok: true, port };
+          }
           break;
         case 'new_tab':
           result = await handleNewTab(args);
@@ -179,6 +200,19 @@ function connect() {
     } catch (e) {
       console.error('[CB] Command error:', e.message);
       result = { ok: false, error: e.message };
+      // Add troubleshooting hints for common errors
+      const hints = {
+        'Element not found': 'Try get_content to verify page text, or wait_for_element to wait for dynamic content',
+        'No active tab': 'Open a tab first with new_tab url=...',
+        'No active tab to close': 'Open a tab first or specify tab_id',
+        'Option not found': 'Try get_content to see available options, or use select_option with text=...',
+      };
+      for (const [pattern, hint] of Object.entries(hints)) {
+        if (result.error && result.error.includes(pattern)) {
+          result.hint = hint;
+          break;
+        }
+      }
     }
 
     sendResponse(id, result);
@@ -949,7 +983,8 @@ async function handleFileChooserIntercept(args) {
       await chrome.debugger.sendCommand({ tabId }, 'Page.setBypassCSP', { enabled: true });
     } catch (e) {}
 
-    // 如果提供了 clickSelector，通过 Blob URL 注入点击（继承页面 user activation，能触发文件选择器）
+    // If click_selector provided: click to trigger file chooser
+    // If omitted: just listen — intercepts the next file chooser that opens on this tab
     if (clickSelector) {
       console.log('[CB] clicking via Blob URL injection:', clickSelector);
       const [clickResult] = await chrome.scripting.executeScript({
@@ -998,6 +1033,8 @@ async function handleFileChooserIntercept(args) {
         return { ok: false, error: 'Click failed: ' + clickInfo.error };
       }
       console.log('[CB] Blob URL click sent, waiting for file chooser...');
+    } else {
+      console.log('[CB] No click_selector provided — waiting for any file chooser on this tab...');
     }
 
     // 等待文件选择器事件

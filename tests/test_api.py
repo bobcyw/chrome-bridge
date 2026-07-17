@@ -1,18 +1,16 @@
 """Tests for bridge/api.py — Browser class high-level API."""
 
-import json
 import os
-import sys
 import subprocess
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import patch
 import pytest
 
 from bridge.api import Browser, _require_ok
 
-
 # ================================================================
 # _require_ok
 # ================================================================
+
 
 class TestRequireOk:
     def test_ok_result_passes_through(self):
@@ -24,7 +22,9 @@ class TestRequireOk:
             _require_ok({"ok": False, "error": "something broke"})
 
     def test_not_ok_with_action_label(self):
-        with pytest.raises(RuntimeError, match=r"Chrome Bridge error \[click\(.btn\)\]"):
+        with pytest.raises(
+            RuntimeError, match=r"Chrome Bridge error \[click\(.btn\)\]"
+        ):
             _require_ok({"ok": False, "error": "not found"}, "click(.btn)")
 
     def test_implicit_not_ok(self):
@@ -37,6 +37,7 @@ class TestRequireOk:
 # Browser — all methods (mocked CLI)
 # ================================================================
 
+
 @pytest.fixture
 def browser():
     """A Browser instance for testing."""
@@ -46,15 +47,21 @@ def browser():
 @pytest.fixture
 def mock_run():
     """Patch _run to return fake CLI results."""
-    with patch('bridge.api._run') as mock:
+    with patch("bridge.api._run") as mock:
         yield mock
 
 
 # ── Tab Management ──────────────────────────────────────────────
 
+
 class TestTabManagement:
     def test_open_new_tab(self, browser, mock_run):
-        mock_run.return_value = {"ok": True, "tabId": 10, "url": "https://example.com", "title": "Example"}
+        mock_run.return_value = {
+            "ok": True,
+            "tabId": 10,
+            "url": "https://example.com",
+            "title": "Example",
+        }
         result = browser.open("https://example.com")
         mock_run.assert_called_once_with("new_tab", url="https://example.com")
         assert result["tabId"] == 10
@@ -69,7 +76,9 @@ class TestTabManagement:
         browser.tab_id = 8
         mock_run.return_value = {"ok": True, "tabId": 8}
         browser.navigate("https://example.com")
-        mock_run.assert_called_once_with("navigate", url="https://example.com", tab_id=8)
+        mock_run.assert_called_once_with(
+            "navigate", url="https://example.com", tab_id=8
+        )
 
     def test_list_tabs(self, browser, mock_run):
         mock_run.return_value = {"ok": True, "tabs": [{"id": 1}, {"id": 2}]}
@@ -105,13 +114,18 @@ class TestTabManagement:
         mock_run.assert_called_once_with("close_tab", tab_id=99)
 
     def test_get_url(self, browser, mock_run):
-        mock_run.return_value = {"ok": True, "url": "https://example.com", "title": "Example"}
+        mock_run.return_value = {
+            "ok": True,
+            "url": "https://example.com",
+            "title": "Example",
+        }
         result = browser.get_url()
         mock_run.assert_called_once_with("get_url")
         assert result["url"] == "https://example.com"
 
 
 # ── Mouse ───────────────────────────────────────────────────────
+
 
 class TestMouse:
     def test_click(self, browser, mock_run):
@@ -147,6 +161,7 @@ class TestMouse:
 
 # ── Keyboard & Input ────────────────────────────────────────────
 
+
 class TestKeyboard:
     def test_type(self, browser, mock_run):
         mock_run.return_value = {"ok": True}
@@ -171,16 +186,21 @@ class TestKeyboard:
 
 # ── Form ────────────────────────────────────────────────────────
 
+
 class TestForm:
     def test_select_option_by_value(self, browser, mock_run):
         mock_run.return_value = {"ok": True}
         browser.select_option("#country", value="CN")
-        mock_run.assert_called_once_with("select_option", selector="#country", value="CN")
+        mock_run.assert_called_once_with(
+            "select_option", selector="#country", value="CN"
+        )
 
     def test_select_option_by_text(self, browser, mock_run):
         mock_run.return_value = {"ok": True}
         browser.select_option("#country", text="China")
-        mock_run.assert_called_once_with("select_option", selector="#country", text="China")
+        mock_run.assert_called_once_with(
+            "select_option", selector="#country", text="China"
+        )
 
     def test_select_option_by_index(self, browser, mock_run):
         mock_run.return_value = {"ok": True}
@@ -189,6 +209,7 @@ class TestForm:
 
 
 # ── Navigation ──────────────────────────────────────────────────
+
 
 class TestNavigation:
     def test_go_back(self, browser, mock_run):
@@ -209,6 +230,7 @@ class TestNavigation:
 
 # ── Content Extraction ──────────────────────────────────────────
 
+
 class TestContent:
     def test_get_content(self, browser, mock_run):
         mock_run.return_value = {"ok": True, "text": "Hello World"}
@@ -225,11 +247,18 @@ class TestContent:
     def test_get_attribute(self, browser, mock_run):
         mock_run.return_value = {"ok": True, "value": "my-class"}
         val = browser.get_attribute(".btn", "class")
-        mock_run.assert_called_once_with("get_attribute", selector=".btn", attribute="class")
+        mock_run.assert_called_once_with(
+            "get_attribute", selector=".btn", attribute="class"
+        )
         assert val == "my-class"
 
     def test_find_element_found(self, browser, mock_run):
-        mock_run.return_value = {"ok": True, "found": True, "tag": "BUTTON", "visible": True}
+        mock_run.return_value = {
+            "ok": True,
+            "found": True,
+            "tag": "BUTTON",
+            "visible": True,
+        }
         result = browser.find_element(".btn")
         mock_run.assert_called_once_with("find_element", selector=".btn")
         assert result["found"] is True
@@ -246,9 +275,12 @@ class TestContent:
         assert result.startswith("data:")
 
     def test_screenshot_save_to_file(self, browser, mock_run, tmp_path):
-        mock_run.return_value = {"ok": True, "dataUrl": "data:image/png;base64,iVBORw0KGgo="}
+        mock_run.return_value = {
+            "ok": True,
+            "dataUrl": "data:image/png;base64,iVBORw0KGgo=",
+        }
         filepath = str(tmp_path / "screenshot.png")
-        result = browser.screenshot(filepath=filepath)
+        browser.screenshot(filepath=filepath)
         assert os.path.exists(filepath)
 
     def test_eval(self, browser, mock_run):
@@ -259,6 +291,7 @@ class TestContent:
 
 
 # ── Wait & Dialogs ──────────────────────────────────────────────
+
 
 class TestWait:
     def test_wait_default(self, browser, mock_run):
@@ -272,28 +305,48 @@ class TestWait:
         mock_run.assert_called_once_with("wait", ms=3000)
 
     def test_wait_for_element(self, browser, mock_run):
-        mock_run.return_value = {"ok": True, "found": True, "tag": "DIV", "visible": True, "elapsed": 1200}
+        mock_run.return_value = {
+            "ok": True,
+            "found": True,
+            "tag": "DIV",
+            "visible": True,
+            "elapsed": 1200,
+        }
         result = browser.wait_for_element(".dynamic-content")
-        mock_run.assert_called_once_with("wait_for_element", selector=".dynamic-content", timeout=10000, interval=300)
+        mock_run.assert_called_once_with(
+            "wait_for_element", selector=".dynamic-content", timeout=10000, interval=300
+        )
         assert result["found"] is True
 
     def test_handle_dialog_accept(self, browser, mock_run):
-        mock_run.return_value = {"ok": True, "action": "accept", "dialogType": "confirm"}
+        mock_run.return_value = {
+            "ok": True,
+            "action": "accept",
+            "dialogType": "confirm",
+        }
         result = browser.handle_dialog(action="accept")
-        mock_run.assert_called_once_with("handle_dialog", action="accept", prompt_text="")
+        mock_run.assert_called_once_with(
+            "handle_dialog", action="accept", prompt_text=""
+        )
         assert result["action"] == "accept"
 
     def test_handle_dialog_with_prompt(self, browser, mock_run):
         mock_run.return_value = {"ok": True, "action": "accept"}
         browser.handle_dialog(action="accept", prompt_text="John")
-        mock_run.assert_called_once_with("handle_dialog", action="accept", prompt_text="John")
+        mock_run.assert_called_once_with(
+            "handle_dialog", action="accept", prompt_text="John"
+        )
 
 
 # ── Cookies & Storage ───────────────────────────────────────────
 
+
 class TestCookies:
     def test_get_cookies_all(self, browser, mock_run):
-        mock_run.return_value = {"ok": True, "cookies": [{"name": "session", "value": "abc"}]}
+        mock_run.return_value = {
+            "ok": True,
+            "cookies": [{"name": "session", "value": "abc"}],
+        }
         cookies = browser.get_cookies()
         mock_run.assert_called_once_with("get_cookies")
         assert len(cookies) == 1
@@ -304,14 +357,21 @@ class TestCookies:
         mock_run.assert_called_once_with("get_cookies", url="https://example.com")
 
     def test_set_cookie(self, browser, mock_run):
-        mock_run.return_value = {"ok": True, "cookie": {"name": "token", "value": "xyz"}}
+        mock_run.return_value = {
+            "ok": True,
+            "cookie": {"name": "token", "value": "xyz"},
+        }
         result = browser.set_cookie("https://example.com", "token", "xyz")
-        mock_run.assert_called_once_with("set_cookie", url="https://example.com", name="token", value="xyz")
+        mock_run.assert_called_once_with(
+            "set_cookie", url="https://example.com", name="token", value="xyz"
+        )
         assert result["name"] == "token"
 
     def test_set_cookie_with_options(self, browser, mock_run):
         mock_run.return_value = {"ok": True, "cookie": {}}
-        browser.set_cookie("https://a.com", "k", "v", domain=".a.com", path="/", secure=True)
+        browser.set_cookie(
+            "https://a.com", "k", "v", domain=".a.com", path="/", secure=True
+        )
         call_args = mock_run.call_args
         # Check that optional params were passed
         assert call_args[1]["domain"] == ".a.com"
@@ -340,10 +400,13 @@ class TestStorage:
     def test_set_storage(self, browser, mock_run):
         mock_run.return_value = {"ok": True}
         browser.set_storage("theme", "dark")
-        mock_run.assert_called_once_with("set_storage", key="theme", value="dark", store="local")
+        mock_run.assert_called_once_with(
+            "set_storage", key="theme", value="dark", store="local"
+        )
 
 
 # ── Misc ────────────────────────────────────────────────────────
+
 
 class TestMisc:
     def test_ping_ok(self, browser, mock_run):
@@ -375,6 +438,7 @@ class TestMisc:
 # Edge cases & Error handling
 # ================================================================
 
+
 class TestErrorHandling:
     def test_open_fails(self, browser, mock_run):
         mock_run.return_value = {"ok": False, "error": "No extension connected"}
@@ -389,7 +453,8 @@ class TestErrorHandling:
     def test_json_decode_error_in_run(self):
         """If CLI returns non-JSON, _run should return an error dict, not crash."""
         from bridge.api import _run
-        with patch('subprocess.run') as mock_subprocess:
+
+        with patch("subprocess.run") as mock_subprocess:
             mock_subprocess.return_value = subprocess.CompletedProcess(
                 args=[], returncode=1, stdout="Something went wrong", stderr=""
             )

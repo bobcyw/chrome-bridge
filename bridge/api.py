@@ -17,10 +17,9 @@ import json
 import os
 import subprocess
 import sys
-import time
 
 _BRIDGE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_CLI_PATH = os.path.join(_BRIDGE_DIR, 'bridge', 'cli.py')
+_CLI_PATH = os.path.join(_BRIDGE_DIR, "bridge", "cli.py")
 _PYTHON = sys.executable
 
 
@@ -34,7 +33,9 @@ def _run(cmd: str, **kwargs) -> dict:
             v = "false"
         args.append(f"{k}={v}")
 
-    result = subprocess.run(args, capture_output=True, text=True, timeout=65, cwd=_BRIDGE_DIR)
+    result = subprocess.run(
+        args, capture_output=True, text=True, timeout=65, cwd=_BRIDGE_DIR
+    )
     try:
         return json.loads(result.stdout.strip())
     except json.JSONDecodeError:
@@ -44,7 +45,9 @@ def _run(cmd: str, **kwargs) -> dict:
 def _require_ok(result: dict, action: str = "") -> dict:
     """Raise if bridge returned an error."""
     if not result.get("ok"):
-        raise RuntimeError(f"Chrome Bridge error [{action}]: {result.get('error', 'unknown')}")
+        raise RuntimeError(
+            f"Chrome Bridge error [{action}]: {result.get('error', 'unknown')}"
+        )
     return result
 
 
@@ -127,7 +130,13 @@ class Browser:
             kwargs["tab_id"] = tid
         _require_ok(_run("type", **kwargs), f"type({selector})")
 
-    def press_key(self, key: str = "Enter", selector: str = None, modifiers: str = None, tab_id: int = None):
+    def press_key(
+        self,
+        key: str = "Enter",
+        selector: str = None,
+        modifiers: str = None,
+        tab_id: int = None,
+    ):
         """Simulate key press. Supported keys: Enter, Tab, Escape, Backspace, Space, Delete, ArrowUp/Down/Left/Right, PageUp/Down, Home, End, F1-F12. modifiers: comma-separated (ctrl,alt,shift,meta)."""
         tid = tab_id or self._tab_id
         kwargs = {"key": key}
@@ -163,7 +172,14 @@ class Browser:
             kwargs["tab_id"] = tid
         _require_ok(_run("right_click", **kwargs), f"right_click({selector})")
 
-    def select_option(self, selector: str, value: str = None, text: str = None, index: int = None, tab_id: int = None):
+    def select_option(
+        self,
+        selector: str,
+        value: str = None,
+        text: str = None,
+        index: int = None,
+        tab_id: int = None,
+    ):
         """Select an option in a <select> element. Match by value, text, or index."""
         tid = tab_id or self._tab_id
         kwargs = {"selector": selector}
@@ -219,15 +235,25 @@ class Browser:
         r = _require_ok(_run("get_attribute", **kwargs), f"get_attribute({selector})")
         return r.get("value", "")
 
-    def wait_for_element(self, selector: str, timeout: int = 10000, interval: int = 300, tab_id: int = None) -> dict:
+    def wait_for_element(
+        self,
+        selector: str,
+        timeout: int = 10000,
+        interval: int = 300,
+        tab_id: int = None,
+    ) -> dict:
         """Poll until an element matching selector appears. Returns {found, tag, text, visible, elapsed}."""
         tid = tab_id or self._tab_id
         kwargs = {"selector": selector, "timeout": timeout, "interval": interval}
         if tid:
             kwargs["tab_id"] = tid
-        return _require_ok(_run("wait_for_element", **kwargs), f"wait_for_element({selector})")
+        return _require_ok(
+            _run("wait_for_element", **kwargs), f"wait_for_element({selector})"
+        )
 
-    def handle_dialog(self, action: str = "dismiss", prompt_text: str = "", tab_id: int = None) -> dict:
+    def handle_dialog(
+        self, action: str = "dismiss", prompt_text: str = "", tab_id: int = None
+    ) -> dict:
         """Handle alert/confirm/prompt dialog. action='accept' or 'dismiss'. Provide prompt_text for prompt dialogs."""
         tid = tab_id or self._tab_id
         kwargs = {"action": action, "prompt_text": prompt_text}
@@ -243,8 +269,17 @@ class Browser:
         r = _require_ok(_run("get_cookies", **kwargs), "get_cookies")
         return r.get("cookies", [])
 
-    def set_cookie(self, url: str, name: str, value: str, domain: str = None, path: str = None,
-                   secure: bool = False, http_only: bool = False, expiration_date: int = None) -> dict:
+    def set_cookie(
+        self,
+        url: str,
+        name: str,
+        value: str,
+        domain: str = None,
+        path: str = None,
+        secure: bool = False,
+        http_only: bool = False,
+        expiration_date: int = None,
+    ) -> dict:
         """Set a browser cookie. Returns the created cookie object."""
         kwargs = {"url": url, "name": name, "value": value}
         if domain:
@@ -260,7 +295,9 @@ class Browser:
         r = _require_ok(_run("set_cookie", **kwargs), f"set_cookie({name})")
         return r.get("cookie", {})
 
-    def get_storage(self, key: str = None, store: str = "local", tab_id: int = None) -> dict:
+    def get_storage(
+        self, key: str = None, store: str = "local", tab_id: int = None
+    ) -> dict:
         """Read localStorage (store='local') or sessionStorage (store='session'). Returns all items or a single key."""
         tid = tab_id or self._tab_id
         kwargs = {"store": store}
@@ -271,7 +308,9 @@ class Browser:
         r = _require_ok(_run("get_storage", **kwargs), "get_storage")
         return r.get("data", {})
 
-    def set_storage(self, key: str, value: str, store: str = "local", tab_id: int = None):
+    def set_storage(
+        self, key: str, value: str, store: str = "local", tab_id: int = None
+    ):
         """Write to localStorage (store='local') or sessionStorage (store='session')."""
         tid = tab_id or self._tab_id
         kwargs = {"key": key, "value": value, "store": store}
@@ -317,6 +356,7 @@ class Browser:
         data_url = r.get("dataUrl", "")
         if filepath and data_url:
             import base64
+
             header, encoded = data_url.split(",", 1)
             with open(filepath, "wb") as f:
                 f.write(base64.b64decode(encoded))

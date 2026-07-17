@@ -16,5 +16,10 @@ def sample_tabs():
     return [
         {"id": 1, "title": "Google", "url": "https://www.google.com", "active": True},
         {"id": 2, "title": "GitHub", "url": "https://github.com", "active": False},
-        {"id": 3, "title": "Example", "url": "https://www.example.com", "active": False},
+        {
+            "id": 3,
+            "title": "Example",
+            "url": "https://www.example.com",
+            "active": False,
+        },
     ]

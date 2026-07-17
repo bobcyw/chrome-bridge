@@ -30,9 +30,16 @@ class TestWebSocketHandler:
         class MockWS:
             def __init__(self):
                 self._iter = self._gen()
-            async def send(self, msg): pass
-            def __aiter__(self): return self
-            async def __anext__(self): return await self._iter.__anext__()
+
+            async def send(self, msg):
+                pass
+
+            def __aiter__(self):
+                return self
+
+            async def __anext__(self):
+                return await self._iter.__anext__()
+
             async def _gen(self):
                 yield json.dumps({"id": "test_1", "cmd": "ping", "args": {}})
 
@@ -52,9 +59,16 @@ class TestWebSocketHandler:
         class MockWS:
             def __init__(self):
                 self._iter = self._gen()
-            async def send(self, msg): pass
-            def __aiter__(self): return self
-            async def __anext__(self): return await self._iter.__anext__()
+
+            async def send(self, msg):
+                pass
+
+            def __aiter__(self):
+                return self
+
+            async def __anext__(self):
+                return await self._iter.__anext__()
+
             async def _gen(self):
                 yield "not valid json {{{"
 
@@ -71,6 +85,7 @@ class TestWebSocketHandler:
         server.connected_ws.clear()
         server.pending.clear()
         import threading
+
         event = threading.Event()
         server.pending["cmd_test"] = {"event": event, "result": None}
         entry_ref = server.pending["cmd_test"]  # keep reference for assertion
@@ -112,6 +127,7 @@ class TestSharedState:
         """Pending entries should be stored and retrievable."""
         server.pending.clear()
         import threading
+
         event = threading.Event()
         server.pending["cmd_123"] = {"event": event, "result": None}
         assert "cmd_123" in server.pending
@@ -124,5 +140,3 @@ class TestSharedState:
         server.connected_ws.clear()
         assert len(server.connected_ws) == 0
         # The HTTP handler checks this before forwarding
-
-
