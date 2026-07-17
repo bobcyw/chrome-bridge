@@ -195,8 +195,8 @@ def main():
   3. Click "Load unpacked"
      Select the extension folder above
 
-  4. Click the Chrome Bridge icon (🧩) in the toolbar
-     → This activates permissions!
+  4. Click the "Chrome Bridge" icon in the toolbar
+     → a blue square — click to activate permissions
 
   5. Start the server:
      chrome-bridge serve --background
