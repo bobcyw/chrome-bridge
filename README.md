@@ -181,11 +181,11 @@ See [CLAUDE.md](CLAUDE.md) for the built-in skill definition, or [docs/claude-co
 
 ## Platform Support
 
-| Platform | Status | Notes |
-|----------|--------|-------|
-| Windows | ✅ | `scripts\start_bridge.bat` or `chrome-bridge serve --background` |
-| macOS | ✅ | Full support |
-| Linux | ✅ | Full support |
+| Platform | Start | Auto-Start |
+|----------|-------|------------|
+| Windows | `scripts\start_bridge.bat` (double-click) or `chrome-bridge serve --background` | `bash scripts/install_service.sh` → Startup folder shortcut |
+| macOS | `chrome-bridge serve --background` or `bash scripts/start_bridge.sh -b` | `bash scripts/install_service.sh` → LaunchAgent plist |
+| Linux | `chrome-bridge serve --background` or `bash scripts/start_bridge.sh -b` | `bash scripts/install_service.sh` → systemd user unit |
 
 ## Installation
 
@@ -222,6 +222,25 @@ scripts\start_bridge.bat
 ```bash
 CHROME_BRIDGE_WS_PORT=9999 CHROME_BRIDGE_HTTP_PORT=9998 chrome-bridge serve
 ```
+
+### Auto-Start on Login (optional)
+
+```bash
+bash scripts/install_service.sh
+```
+
+This auto-detects your OS and installs the right thing:
+- **macOS** → LaunchAgent (`~/Library/LaunchAgents/com.chrome-bridge.plist`)
+- **Linux** → systemd user unit (`~/.config/systemd/user/chrome-bridge.service`)
+- **Windows** → Startup folder shortcut (runs `launch_silent.vbs`)
+
+The server will start automatically every time you log in. To remove:
+
+| OS | Uninstall |
+|----|-----------|
+| macOS | `launchctl unload ~/Library/LaunchAgents/com.chrome-bridge.plist` |
+| Linux | `systemctl --user disable chrome-bridge.service` |
+| Windows | Delete `ChromeBridge.lnk` from Startup folder |
 
 ## Troubleshooting
 
