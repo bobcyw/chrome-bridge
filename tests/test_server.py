@@ -1,8 +1,6 @@
 """Tests for bridge/server.py — HTTP API + WebSocket relay."""
 
 import json
-import asyncio
-from unittest.mock import MagicMock, patch
 import pytest
 
 from bridge import server
@@ -28,47 +26,42 @@ class TestWebSocketHandler:
     async def test_handler_registers_connection(self):
         """New connection should be added to connected_ws, removed on disconnect."""
         server.connected_ws.clear()
-        mock_ws = AsyncMock()
 
-        recv_calls = [0]
-        async def mock_recv():
-            recv_calls[0] += 1
-            if recv_calls[0] == 1:
-                server.connected_ws.append(mock_ws)
-                return json.dumps({"id": "test_1", "cmd": "ping", "args": {}})
-            raise asyncio.CancelledError()
+        class MockWS:
+            def __init__(self):
+                self._iter = self._gen()
+            async def send(self, msg): pass
+            def __aiter__(self): return self
+            async def __anext__(self): return await self._iter.__anext__()
+            async def _gen(self):
+                yield json.dumps({"id": "test_1", "cmd": "ping", "args": {}})
 
-        mock_ws.__aiter__ = lambda self: self
-        mock_ws.__anext__ = mock_recv
-
+        mock_ws = MockWS()
         try:
             await server.ws_handler(mock_ws)
-        except asyncio.CancelledError:
+        except StopAsyncIteration:
             pass
 
-        # Should be removed after disconnect
         assert mock_ws not in server.connected_ws
 
     @pytest.mark.asyncio
     async def test_handler_ignores_invalid_json(self):
         """Malformed messages should be silently ignored."""
         server.connected_ws.clear()
-        mock_ws = AsyncMock()
 
-        recv_calls = [0]
-        async def mock_recv():
-            recv_calls[0] += 1
-            if recv_calls[0] == 1:
-                server.connected_ws.append(mock_ws)
-                return "not valid json {{{"
-            raise asyncio.CancelledError()
+        class MockWS:
+            def __init__(self):
+                self._iter = self._gen()
+            async def send(self, msg): pass
+            def __aiter__(self): return self
+            async def __anext__(self): return await self._iter.__anext__()
+            async def _gen(self):
+                yield "not valid json {{{"
 
-        mock_ws.__aiter__ = lambda self: self
-        mock_ws.__anext__ = mock_recv
-
+        mock_ws = MockWS()
         try:
             await server.ws_handler(mock_ws)
-        except asyncio.CancelledError:
+        except StopAsyncIteration:
             pass
         # Should not have crashed
 
@@ -118,7 +111,8 @@ class TestSharedState:
     def test_pending_registration(self):
         """Pending entries should be stored and retrievable."""
         server.pending.clear()
-        event = MagicMock()
+        import threading
+        event = threading.Event()
         server.pending["cmd_123"] = {"event": event, "result": None}
         assert "cmd_123" in server.pending
         entry = server.pending.pop("cmd_123")
