@@ -183,7 +183,7 @@ async def main():
     _event_loop = asyncio.get_running_loop()
 
     print("=" * 50, flush=True)
-    print("  Chrome Bridge Server  v4.0", flush=True)
+    print("  Chrome Bridge Server  v1.0", flush=True)
     print(f"  WS:  ws://127.0.0.1:{WS_PORT}", flush=True)
     print(f"  HTTP: http://127.0.0.1:{HTTP_PORT}/cmd", flush=True)
     print("=" * 50, flush=True)

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chrome-bridge"
-version = "4.0.0"
+version = "1.0.0"
 description = "AI-to-Browser bridge — Let AI coding agents control your real Chrome browser"
 readme = "README.md"
 license = "Apache-2.0"

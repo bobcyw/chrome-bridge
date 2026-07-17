@@ -47,7 +47,7 @@ function connect() {
           result = { ok: true, pong: true };
           break;
         case 'version':
-          result = { ok: true, version: '4.0', commands: 'ping,version,new_tab,navigate,list_tabs,find_tab,close_tab,get_url,activate_tab,reload,go_back,go_forward,click,click_text,double_click,right_click,hover,type,type_active,type_trusted,press_key,scroll,select_option,find_element,get_attribute,get_content,get_html,screenshot,eval,wait,wait_for_element,fetch_api,get_images,get_cookies,set_cookie,get_storage,set_storage,handle_dialog,file_chooser_intercept,reload_self' };
+          result = { ok: true, version: '1.0', commands: 'ping,version,new_tab,navigate,list_tabs,find_tab,close_tab,get_url,activate_tab,reload,go_back,go_forward,click,click_text,double_click,right_click,hover,type,type_active,type_trusted,press_key,scroll,select_option,find_element,get_attribute,get_content,get_html,screenshot,eval,wait,wait_for_element,fetch_api,get_images,get_cookies,set_cookie,get_storage,set_storage,handle_dialog,file_chooser_intercept,reload_self' };
           break;
         case 'reload_self':
           // Reload the extension (service worker restarts, connection drops)
