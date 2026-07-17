@@ -175,6 +175,38 @@ For more details: https://github.com/your-username/chrome-bridge
 
 def main():
     if len(sys.argv) < 2:
+        # Show setup guide with live paths on first run
+        import bridge
+
+        ext_dir = os.path.abspath(
+            os.path.join(os.path.dirname(bridge.__file__), "extension")
+        )
+        print(
+            f"""========================================
+  Chrome Bridge — Get Started
+========================================
+
+  1. Load the extension in Chrome:
+     {ext_dir}
+
+  2. Open Chrome → chrome://extensions
+     Enable "Developer mode" (top right)
+
+  3. Click "Load unpacked"
+     Select the extension folder above
+
+  4. Click the Chrome Bridge icon (🧩) in the toolbar
+     → This activates permissions!
+
+  5. Start the server:
+     chrome-bridge serve --background
+
+  6. Test:
+     chrome-bridge ping
+
+========================================
+"""
+        )
         print(HELP_TEXT)
         sys.exit(0)
 
