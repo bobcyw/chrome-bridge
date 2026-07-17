@@ -178,10 +178,10 @@ python -m pytest tests/ -v
 
 ## Publishing to PyPI
 
-The publish script lives in `obsidian/publish.sh` (gitignored, contains the token).
+The publish script lives in `notes/publish.sh` (gitignored, contains the token).
 
 ```bash
-bash obsidian/publish.sh
+bash notes/publish.sh
 ```
 
 This auto-builds the wheel and uploads to PyPI. Before publishing:
@@ -191,4 +191,4 @@ This auto-builds the wheel and uploads to PyPI. Before publishing:
 3. Commit and push
 4. Run `bash obsidian/publish.sh`
 
-If the token is expired or needs rotation, edit `obsidian/publish.sh` and replace `PYPI_TOKEN`.
+If the token is expired or needs rotation, edit `notes/publish.sh` and replace `PYPI_TOKEN`.
