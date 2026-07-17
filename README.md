@@ -6,22 +6,26 @@
 
 ```bash
 # 1. Install
-pip install -r requirements.txt
+git clone https://github.com/YOUR_USERNAME/chrome-bridge.git
+cd chrome-bridge
+pip install -e .
 
-# 2. Start the bridge server
-python bridge/cli.py serve
-# (or: chrome-bridge serve)
+# 2. Start the bridge server (background)
+chrome-bridge serve --background
 
 # 3. Load the Chrome Extension
 #    Open chrome://extensions → Developer mode → Load unpacked → select extension/
+#    → Click the Chrome Bridge icon in the toolbar to activate
 
 # 4. Test
-python bridge/cli.py ping
+chrome-bridge ping
 # → {"ok": true, "pong": true}
 
-python bridge/cli.py new_tab url=https://www.example.com
-python bridge/cli.py get_content
+chrome-bridge new_tab url=https://www.example.com
+chrome-bridge get_content
 ```
+
+**Windows users**: Double-click `scripts\start_bridge.bat` to start everything with one click.
 
 ## Architecture
 
@@ -179,21 +183,17 @@ See [CLAUDE.md](CLAUDE.md) for the built-in skill definition, or [docs/claude-co
 
 | Platform | Status | Notes |
 |----------|--------|-------|
-| Windows | ✅ | Use Git Bash or `chrome-bridge serve` for Python-native |
+| Windows | ✅ | `scripts\start_bridge.bat` or `chrome-bridge serve --background` |
 | macOS | ✅ | Full support |
 | Linux | ✅ | Full support |
 
 ## Installation
 
 ```bash
-# From source
 git clone https://github.com/YOUR_USERNAME/chrome-bridge.git
 cd chrome-bridge
-pip install -r requirements.txt
-
-# Or install as a package
 pip install -e .
-# Now available everywhere: chrome-bridge serve / ping / new_tab ...
+# chrome-bridge command now available globally
 ```
 
 ### Load the Chrome Extension
@@ -201,28 +201,40 @@ pip install -e .
 1. Open `chrome://extensions` in Chrome
 2. Enable **Developer mode** (top right)
 3. Click **Load unpacked** → select the `extension/` folder
-4. Click the Chrome Bridge icon in the toolbar to activate
+4. Click the **Chrome Bridge icon** in the toolbar to activate the service worker
+   - _The icon must be clicked once after loading, or after Chrome restarts_
 
 ### Start the Server
 
 ```bash
-# Python-native (recommended — works on all platforms)
+# Daemon mode (recommended) — run in background, works on all platforms
+chrome-bridge serve --background
+
+# Foreground mode — see logs, Ctrl+C to stop
 chrome-bridge serve
 
-# Or via shell script
-bash scripts/start_bridge.sh
+# Windows one-click (no terminal needed)
+scripts\start_bridge.bat
+```
+
+**Ports**: WS `19876` + HTTP `19877`. Override via environment variables:
+
+```bash
+CHROME_BRIDGE_WS_PORT=9999 CHROME_BRIDGE_HTTP_PORT=9998 chrome-bridge serve
 ```
 
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `ping` timeout | Server not running | `chrome-bridge serve` |
-| "No Chrome extension connected" | Extension SW suspended | Click extension icon in Chrome |
-| "Element not found" | Wrong selector | Use `get_content` to verify page state |
-| Screenshot returns `canvas-fallback` | Permission not active | Click extension icon, then retry |
+| `Cannot connect to bridge server` | Server not running | `chrome-bridge serve --background` |
+| Port 19876/19877 already in use | Another instance running | Kill existing process, or set `CHROME_BRIDGE_WS_PORT` / `CHROME_BRIDGE_HTTP_PORT` env vars |
+| "No Chrome extension connected" | Extension SW suspended | Click extension icon in Chrome toolbar to activate |
+| "No Chrome extension connected" (persists) | Extension not loaded/reloaded | Go to `chrome://extensions`, click refresh ↻ on Chrome Bridge |
+| "Element not found" | Wrong selector / page not loaded | Use `get_content` to verify page state, or `wait_for_element` |
+| Screenshot returns `canvas-fallback` | Tab not active | Click extension icon, then activate target tab |
 | `eval` fails | Page CSP blocks eval | Use `click`/`click_text`/`get_content` instead |
-| Dialog hangs the tab | Unhandled alert/confirm | Use `handle_dialog action=dismiss` |
+| Dialog hangs the tab | Unhandled alert/confirm/prompt | Use `handle_dialog action=dismiss` |
 
 ## Requirements
 
