@@ -18,6 +18,9 @@ env/
 .DS_Store
 Thumbs.db
 
+# Project management (local only)
+obsidian/
+
 # Distribution
 dist/
 build/
