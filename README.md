@@ -2,6 +2,14 @@
 
 **AI-to-Browser bridge** — Let AI coding agents (Claude Code, Cursor, Copilot, etc.) control your **real Chrome browser** via WebSocket. No headless browser. No CDP detection. Your logins, cookies, and extensions stay intact.
 
+## Claude Code
+
+Chrome Bridge is built for Claude Code. Once installed, Claude can control your browser in natural language:
+
+> *"Open GitHub, search for 'chrome-bridge', and tell me the star count"*
+
+Just open the project in Claude Code — `CLAUDE.md` loads automatically with all 32 commands. Claude reads pages, fills forms, handles dialogs, uploads files, and takes screenshots — all through your real Chrome.
+
 ## Quick Start
 
 ```bash
@@ -173,12 +181,6 @@ b.set_storage("theme", "dark")
 print(b.ping())  # True
 ```
 
-## Claude Code Integration
-
-Chrome Bridge works out of the box with Claude Code. Drop this repo into your project and Claude can control your browser automatically.
-
-See [CLAUDE.md](CLAUDE.md) for the built-in skill definition, or [docs/claude-code-setup.md](docs/claude-code-setup.md) for manual setup.
-
 ## Platform Support
 
 | Platform | Start | Auto-Start |
@@ -280,4 +282,4 @@ The server will start automatically every time you log in. To remove:
 
 ## License
 
-MIT — see [LICENSE](LICENSE) for details.
+Apache 2.0 — see [LICENSE](LICENSE) for details.
