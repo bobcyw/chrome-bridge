@@ -2,14 +2,21 @@
   "manifest_version": 3,
   "name": "Chrome Bridge",
   "version": "1.0.0",
-  "description": "Browser automation bridge for AI agents — WebSocket commands, CSP bypass, trusted typing",
+  "description": "Browser automation bridge for AI agents — let AI coding assistants control your real Chrome browser",
+  "author": "Yawen Cao",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "permissions": [
     "tabs",
     "scripting",
     "storage",
     "alarms",
     "debugger",
-    "webNavigation"
+    "webNavigation",
+    "cookies"
   ],
   "host_permissions": [
     "<all_urls>",
@@ -27,6 +34,11 @@
     }
   ],
   "action": {
-    "default_title": "Chrome Bridge"
+    "default_title": "Chrome Bridge",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   }
 }

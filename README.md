@@ -208,10 +208,17 @@ The `chrome-bridge` command is available globally after install.
 
 ### Load the Chrome Extension
 
-1. Open `chrome://extensions` in Chrome
-2. Enable **Developer mode** (top right)
-3. Click **Load unpacked** → select the `extension/` folder
-4. Click the **Chrome Bridge icon** in the toolbar to activate the service worker
+**From Chrome Web Store** (easiest):
+
+Install from the [Chrome Web Store](https://chromewebstore.google.com) (coming soon).
+
+**From source** (developer mode):
+
+1. Clone the repo: `git clone https://github.com/bobcyw/chrome-bridge.git`
+2. Open `chrome://extensions` in Chrome
+3. Enable **Developer mode** (top right)
+4. Click **Load unpacked** → select the `extension/` folder from the cloned repo
+5. Click the **Chrome Bridge icon** in the toolbar to activate the service worker
    - _The icon must be clicked once after loading, or after Chrome restarts_
 
 ### Start the Server
