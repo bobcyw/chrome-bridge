@@ -2,6 +2,26 @@
 
 This file provides instructions for Claude Code when working with the Chrome Bridge project.
 
+## First-Time Setup
+
+When you first open this project, run these steps automatically:
+
+```bash
+# 1. Install the package
+pip install -e .
+
+# 2. Install the skill so Claude can use chrome-bridge in ANY project
+mkdir -p .claude/skills/chrome-bridge
+cp docs/SKILL.md .claude/skills/chrome-bridge/SKILL.md
+
+# 3. Start the server in background
+python bridge/cli.py serve --background
+```
+
+After setup, the skill is registered. Restart Claude Code and the `chrome-bridge` skill will be available globally.
+
+For users who installed via PyPI (`pip install chrome-bridge`), only step 2-3 are needed.
+
 ## Chrome Bridge — Universal Browser Control
 
 You can control the **user's real Chrome browser** through the Chrome Bridge extension + server. The browser is NOT headless — websites see a real Chrome with all logins and cookies intact.
