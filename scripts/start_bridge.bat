@@ -51,6 +51,6 @@ echo ==========================================
 echo.
 echo   Now load the extension in Chrome:
 echo     chrome://extensions -^> Dev mode -^> Load unpacked
-echo   Select: %~dp0..\extension
+echo   Select: %~dp0..\bridge\extension
 echo.
 pause

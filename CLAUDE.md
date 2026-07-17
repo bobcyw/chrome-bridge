@@ -206,7 +206,7 @@ bash notes/publish.sh
 
 This auto-builds the wheel and uploads to PyPI. Before publishing:
 
-1. Update version in `pyproject.toml`, `bridge/__init__.py`, `extension/background.js` (version command), and `bridge/server.py` (banner)
+1. Update version in `pyproject.toml`, `bridge/__init__.py`, `bridge/extension/background.js` (version command), and `bridge/server.py` (banner)
 2. Run tests: `python -m pytest tests/ -v`
 3. Commit and push
 4. Run `bash obsidian/publish.sh`

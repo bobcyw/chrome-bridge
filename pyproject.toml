@@ -57,6 +57,10 @@ chrome-bridge = "bridge.cli:main"
 [tool.setuptools.packages.find]
 include = ["bridge*"]
 
+[tool.setuptools.package-data]
+"bridge.extension" = ["*"]
+"bridge.extension.icons" = ["*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"

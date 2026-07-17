@@ -26,12 +26,20 @@ chrome-bridge serve --background
 
 ### 3. Load the Chrome Extension *(the one manual step)*
 
-1. Clone the repo: `git clone https://github.com/bobcyw/chrome-bridge.git`
-2. Open `chrome://extensions` → **Developer mode** ON
-3. **Load unpacked** → select `extension/` from the cloned repo
-4. Click the **Chrome Bridge icon** in the toolbar to activate
+The extension folder is included in the pip package. Print its path:
 
-> **Windows**: double-click `scripts\start_bridge.bat` instead of steps 2-4 — it starts the server automatically.
+```bash
+chrome-bridge extension-path
+# → /path/to/chrome_bridge/extension
+```
+
+Then:
+
+1. Open `chrome://extensions` → **Developer mode** ON
+2. **Load unpacked** → select the `extension/` folder from the path above
+3. Click the **Chrome Bridge icon** in the toolbar to activate
+
+**No `git clone` needed.** If you prefer a standalone zip, download from [GitHub Releases](https://github.com/bobcyw/chrome-bridge/releases).
 
 ```bash
 # 4. Done — test it

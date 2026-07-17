@@ -27,13 +27,13 @@ flake8 bridge/ tests/ --max-line-length=100 --extend-ignore=E501,W503
 ```
 
 - **Python**: black for formatting, flake8 for linting
-- **JavaScript**: Keep consistent with `extension/background.js` style (2-space indent, single quotes)
+- **JavaScript**: Keep consistent with `bridge/extension/background.js` style (2-space indent, single quotes)
 
 ## Project Structure
 
 ```
 bridge/         Python package (CLI + server + API)
-extension/      Chrome Extension (background.js + manifest)
+bridge/extension/  Chrome Extension (background.js + manifest)
 tests/          pytest test suite
 docs/           Integration docs (Claude Code setup, skill definition)
 scripts/        Platform launchers
@@ -49,7 +49,7 @@ See `notes/设计/Architecture Overview.md` for full details (local Obsidian vau
 
 ## Adding a New Command
 
-1. Add handler function to `extension/background.js`
+1. Add handler function to `bridge/extension/background.js`
 2. Add `case` in the command switch
 3. Add CLI help text in `bridge/cli.py`
 4. Add Python API method in `bridge/api.py`

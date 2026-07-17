@@ -180,6 +180,22 @@ def main():
 
     cmd = sys.argv[1]
 
+    # Built-in: extension-path — print the path to the Chrome extension folder
+    if cmd == "extension-path":
+        import bridge
+
+        ext_dir = os.path.join(os.path.dirname(bridge.__file__), "extension")
+        ext_dir = os.path.abspath(ext_dir)
+        if os.path.isdir(ext_dir):
+            print(ext_dir)
+        else:
+            print(
+                "Extension not found. Clone the repo: https://github.com/bobcyw/chrome-bridge",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        sys.exit(0)
+
     # Built-in: serve — start the WebSocket bridge server
     if cmd == "serve":
         background = "--background" in sys.argv or "-b" in sys.argv
