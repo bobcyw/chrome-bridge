@@ -6,7 +6,8 @@
 
 ```bash
 # 1. Install
-pip install chrome-bridge
+pip install chrome-bridge          # pip
+# uv tool install chrome-bridge    # or uv
 
 # 2. Start the bridge server (background)
 chrome-bridge serve --background
@@ -189,10 +190,15 @@ See [CLAUDE.md](CLAUDE.md) for the built-in skill definition, or [docs/claude-co
 ## Installation
 
 ```bash
-# From PyPI (recommended)
+# pip
 pip install chrome-bridge
 
-# Or from source
+# uv
+uv tool install chrome-bridge
+# Then run: chrome-bridge serve --background
+# Or one-shot: uvx chrome-bridge ping
+
+# From source
 git clone https://github.com/bobcyw/chrome-bridge.git
 cd chrome-bridge
 pip install -e .
