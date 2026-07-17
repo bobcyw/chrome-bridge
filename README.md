@@ -17,13 +17,29 @@ Claude will read `CLAUDE.md`, install the package, register the skill, and start
 ## Quick Start
 
 ```bash
+# 1. Install
 pip install chrome-bridge          # or: uv tool install chrome-bridge
-chrome-bridge serve --background   # start the bridge
-chrome-bridge ping                 # test it
+
+# 2. Start the bridge
+chrome-bridge serve --background
+```
+
+### 3. Load the Chrome Extension *(the one manual step)*
+
+1. Clone the repo: `git clone https://github.com/bobcyw/chrome-bridge.git`
+2. Open `chrome://extensions` → **Developer mode** ON
+3. **Load unpacked** → select `extension/` from the cloned repo
+4. Click the **Chrome Bridge icon** in the toolbar to activate
+
+> **Windows**: double-click `scripts\start_bridge.bat` instead of steps 2-4 — it starts the server automatically.
+
+```bash
+# 4. Done — test it
+chrome-bridge ping
 # → {"ok": true, "pong": true}
 ```
 
-You also need the Chrome Extension — see [Load the Extension](#load-the-chrome-extension) below (one-time setup).
+The extension is a one-time setup. After that, only `chrome-bridge serve --background` is needed to start a session.
 
 ## Architecture
 
@@ -140,17 +156,6 @@ b.get_storage(key="theme")
 | `ping` / `version` | — | Health check |
 
 </details>
-
-## Load the Chrome Extension
-
-The extension is **not** in the pip package — it lives in the browser. You need to load it once:
-
-1. Clone the repo: `git clone https://github.com/bobcyw/chrome-bridge.git`
-2. Open `chrome://extensions` → **Developer mode** (top right)
-3. **Load unpacked** → select `extension/` from the cloned repo
-4. Click the **Chrome Bridge icon** in the toolbar to activate
-
-> **Windows**: double-click `scripts\start_bridge.bat` instead of step 2 above — it starts the server automatically.
 
 ## Platform Support
 
