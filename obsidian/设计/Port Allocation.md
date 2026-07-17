@@ -20,7 +20,7 @@ Private "special" version uses:
 - Environment variable overrides (`CHROME_BRIDGE_WS_PORT`, `CHROME_BRIDGE_HTTP_PORT`) allow custom ports
 - Extension `WS_URL` is the one piece NOT configurable via env (hardcoded in `background.js`)
   - Users needing custom WS ports must edit the extension source
-  - See [[Known Issues#1]]
+  - See [[../问题/Known Issues#1]]
 
 ## Port Selection
 

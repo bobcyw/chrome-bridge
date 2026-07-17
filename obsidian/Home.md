@@ -8,28 +8,53 @@ created: 2026-07-17
 ## Current Status
 
 - **Version**: 4.0.0
-- **Git**: `master` — 4 commits, clean history
+- **Git**: `master` — 9 commits, clean history
 - **Tests**: 89 passing, GitHub Actions CI (3 OS × 4 Python)
-- **Release readiness**: See [[Release v4.0]]
+- **Release readiness**: See [[发布/Release v4.0 Checklist]]
+
+## Directory
+
+```
+obsidian/
+├── Home.md                          ← 你在这里
+├── Roadmap.md                       ← 未来规划
+├── 发布/                            ← 版本发布跟踪
+│   ├── Release v4.0 Checklist.md
+│   ├── GitHub Setup.md
+│   └── Changelog.md
+├── 体验/                            ← 用户视角
+│   ├── User Journey.md
+│   ├── Platform Support.md
+│   └── Claude Code Integration.md
+├── 设计/                            ← 技术决策
+│   ├── Architecture Overview.md
+│   ├── ADR - HTTP over File IPC.md
+│   ├── Port Allocation.md
+│   └── E-commerce Code Removal.md
+└── 问题/                            ← 缺陷跟踪
+    └── Known Issues.md
+```
 
 ## Quick Links
 
-- [[Release v4.0]] — launch checklist
-- [[Roadmap]] — what's next
-- [[Changelog]] — version history
-- [[Known Issues]] — bugs and limitations
-- [[GitHub Setup]] — before going public
+### 发布
+- [[发布/Release v4.0 Checklist]] — launch checklist
+- [[发布/GitHub Setup]] — before going public
+- [[发布/Changelog]] — version history
 
-## Architecture Snapshot
+### 用户体验
+- [[体验/User Journey]] — end-to-end user flow
+- [[体验/Platform Support]] — Windows/macOS/Linux details
+- [[体验/Claude Code Integration]] — AI agent experience
 
-```
-CLI / Python API ──HTTP :19877──▶ server.py ──WebSocket :19876──▶ Chrome Extension ──▶ Browser
-```
+### 设计
+- [[设计/Architecture Overview]] — high-level design
+- [[设计/ADR - HTTP over File IPC]] — why HTTP instead of file polling
+- [[设计/Port Allocation]] — why 19876/19877
+- [[设计/E-commerce Code Removal]] — what was stripped
 
-32 commands | 3 platforms | 0 extra dependencies
+### 问题
+- [[问题/Known Issues]] — active bugs and resolved items
 
-## Key Decisions Log
-
-- [[Port Allocation]] — why 19876/19877 vs 9876/9877
-- [[Architecture Decision - HTTP over File IPC]] — why Plan B
-- [[E-commerce Code Removal]] — what was stripped before going open source
+### 规划
+- [[Roadmap]] — v4.0 → v5.0

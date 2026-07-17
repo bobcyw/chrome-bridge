@@ -1,0 +1,217 @@
+{
+  "main": {
+    "id": "5b14ce04341788fd",
+    "type": "split",
+    "children": [
+      {
+        "id": "fe77d7eafe4f41b4",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "7fb08ed8e01e486e",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Roadmap.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Roadmap"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "49a0cf229f69da95",
+    "type": "split",
+    "children": [
+      {
+        "id": "16ac545d839604aa",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c8a9fcfde90541cc",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "9473e61fc61d764f",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
+            }
+          },
+          {
+            "id": "4654e0938a45fb98",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "书签"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "c37ddbf1d748a53a",
+    "type": "split",
+    "children": [
+      {
+        "id": "f10349b55f0873d4",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "38f9d2f4fbc9a0e2",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Roadmap.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Roadmap 的反向链接列表"
+            }
+          },
+          {
+            "id": "e50e6316018b5622",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Roadmap.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Roadmap 的出链列表"
+            }
+          },
+          {
+            "id": "98a3dde11e4323d3",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "标签"
+            }
+          },
+          {
+            "id": "fec684f3b2486bcb",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "添加笔记属性"
+            }
+          },
+          {
+            "id": "ddbbd95b716afc35",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Roadmap.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Roadmap 的大纲"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "bases:新建数据库": false
+    }
+  },
+  "active": "7fb08ed8e01e486e",
+  "lastOpenFiles": [
+    "Home.md.tmp.62432.3b9387fbd8fc",
+    "体验/Claude Code Integration.md",
+    "体验/Claude Code Integration.md.tmp.62432.38738264b5e7",
+    "体验/Platform Support.md",
+    "体验/Platform Support.md.tmp.62432.4e76ef4421a7",
+    "体验/User Journey.md",
+    "体验/User Journey.md.tmp.62432.90f7987c243c",
+    "设计/Architecture Overview.md",
+    "设计/Architecture Overview.md.tmp.62432.f2791d7fcef1",
+    "问题/Known Issues.md",
+    "设计/E-commerce Code Removal.md",
+    "设计/Port Allocation.md",
+    "设计/ADR - HTTP over File IPC.md",
+    "发布/Changelog.md",
+    "发布/GitHub Setup.md",
+    "Release v4.0.md",
+    "发布/Release v4.0 Checklist.md",
+    "问题",
+    "设计",
+    "体验",
+    "发布",
+    "Roadmap.md",
+    "Port Allocation.md",
+    "Known Issues.md",
+    "GitHub Setup.md",
+    "E-commerce Code Removal.md",
+    "Changelog.md",
+    "Architecture Decision - HTTP over File IPC.md"
+  ]
+}

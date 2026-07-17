@@ -42,5 +42,5 @@ tags: [release, infra]
 
 - [ ] Tag: `git tag v4.0.0 && git push --tags`
 - [ ] Create GitHub Release from tag
-- [ ] Release notes from [[Release v4.0]]
+- [ ] Release notes from [[Release v4.0 Checklist]]
 - [ ] Attach `extension/` as a zip for manual install

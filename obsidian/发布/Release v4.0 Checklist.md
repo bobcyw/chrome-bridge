@@ -10,11 +10,11 @@ status: preparing
 ## Pre-Release Checklist
 
 ### Code Quality
-- [x] Remove all e-commerce business code → [[E-commerce Code Removal]]
-- [x] Architecture upgrade: file IPC → HTTP API → [[Architecture Decision - HTTP over File IPC]]
+- [x] Remove all e-commerce business code → [[../设计/E-commerce Code Removal]]
+- [x] Architecture upgrade: file IPC → HTTP API → [[../设计/ADR - HTTP over File IPC]]
 - [x] 32 browser commands covering full web automation surface
 - [x] 89 tests, GitHub Actions CI matrix
-- [x] New ports (19876/19877) to avoid conflict with private version → [[Port Allocation]]
+- [x] New ports (19876/19877) to avoid conflict with private version → [[../设计/Port Allocation]]
 - [ ] Final code review pass
 - [ ] Run linter (black/flake8) across Python code
 - [ ] Verify all JS code is clean (no console.log spam)
