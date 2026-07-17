@@ -1,17 +1,49 @@
 [build-system]
 requires = ["setuptools>=64"]
-build-backend = "setuptools.backends._legacy:_Backend"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "chrome-bridge"
 version = "4.0.0"
-description = "AI-to-Browser bridge: Let AI coding agents control your real Chrome browser via WebSocket"
+description = "AI-to-Browser bridge — Let AI coding agents control your real Chrome browser"
 readme = "README.md"
-license = {text = "MIT"}
+license = "Apache-2.0"
 requires-python = ">=3.10"
+authors = [
+    {name = "Yawen Cao", email = "bobcyw@163.com"},
+]
+keywords = [
+    "browser",
+    "automation",
+    "chrome",
+    "ai-agents",
+    "claude-code",
+    "websocket",
+    "chrome-extension",
+    "browser-automation",
+    "web-automation",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: WWW/HTTP :: Browsers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Testing",
+]
 dependencies = [
     "websockets>=12.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/bobcyw/chrome-bridge"
+Repository = "https://github.com/bobcyw/chrome-bridge"
+Issues = "https://github.com/bobcyw/chrome-bridge/issues"
 
 [project.optional-dependencies]
 test = [
