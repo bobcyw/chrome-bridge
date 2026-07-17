@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Chrome Bridge — status check script
+# Chrome Bridge — status check
 # Usage: bash status_bridge.sh
+set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 CLI_PATH="$PROJECT_DIR/bridge/cli.py"
 LOG_FILE="$PROJECT_DIR/runtime/server.log"
-
 PYTHON="${PYTHON:-python}"
 
 echo "=========================================="
@@ -14,46 +14,41 @@ echo "  Chrome Bridge — Status"
 echo "=========================================="
 echo ""
 
-# 1. Check HTTP API
-HTTP_CHECK=$(netstat -ano 2>/dev/null | grep ":9877.*LISTEN" | head -1)
-if [ -n "$HTTP_CHECK" ]; then
-  echo "[OK] HTTP API: http://127.0.0.1:9877"
+# 1. HTTP API
+if netstat -ano 2>/dev/null | grep -q ":19877.*LISTEN"; then
+  echo "[OK] HTTP API  http://127.0.0.1:19877"
 else
-  echo "[FAIL] HTTP API: NOT RUNNING"
-  echo "  Start it with: bash $SCRIPT_DIR/start_bridge.sh"
+  echo "[FAIL] HTTP API not running"
+  echo "  Start: bash $SCRIPT_DIR/start_bridge.sh --background"
   exit 1
 fi
 
-# 2. Check WebSocket
-WS_CHECK=$(netstat -ano 2>/dev/null | grep ":9876.*LISTEN" | head -1)
-if [ -n "$WS_CHECK" ]; then
-  echo "[OK] WebSocket: ws://127.0.0.1:9876"
+# 2. WebSocket
+if netstat -ano 2>/dev/null | grep -q ":19876.*LISTEN"; then
+  echo "[OK] WebSocket  ws://127.0.0.1:19876"
 else
-  echo "[WARN] WebSocket: NOT LISTENING"
+  echo "[WARN] WebSocket not listening"
 fi
 
-# 3. Check extension connection
-ESTABLISHED=$(netstat -ano 2>/dev/null | grep ":9876.*ESTABLISHED" | head -1)
-if [ -n "$ESTABLISHED" ]; then
-  echo "[OK] Chrome extension: CONNECTED"
+# 3. Extension connection
+if netstat -ano 2>/dev/null | grep -q ":19876.*ESTABLISHED"; then
+  echo "[OK] Chrome extension connected"
 else
-  echo "[WARN] Chrome extension: NOT CONNECTED"
-  echo "  Reload the extension or click its icon in Chrome"
+  echo "[WARN] Chrome extension NOT connected"
+  echo "  → Click the Chrome Bridge icon in Chrome toolbar"
+  echo "  → Or reload at chrome://extensions"
   echo ""
-  echo "  Log tail:"
-  tail -5 "$LOG_FILE" 2>/dev/null
+  tail -3 "$LOG_FILE" 2>/dev/null
 fi
 
-# 4. Send a test ping
+# 4. Ping
 echo ""
-echo "[TEST] Sending ping..."
+echo "[TEST] Full pipeline ping..."
 RESULT=$("$PYTHON" "$CLI_PATH" ping 2>&1)
 if echo "$RESULT" | grep -q '"pong": true'; then
-  echo "[OK] Ping test: PASSED"
+  echo "[OK] All systems go!"
 else
-  echo "[FAIL] Ping test: FAILED"
+  echo "[FAIL] Ping failed:"
   echo "  $RESULT"
 fi
-
 echo ""
-echo "=========================================="

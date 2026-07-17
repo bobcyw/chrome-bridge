@@ -27,8 +27,8 @@ if hasattr(sys.stderr, 'reconfigure') and sys.stderr.encoding != 'utf-8':
 
 # ── Configuration ────────────────────────────────────────────────
 
-WS_PORT = 9876
-HTTP_PORT = 9877
+WS_PORT = int(os.environ.get('CHROME_BRIDGE_WS_PORT', '19876'))
+HTTP_PORT = int(os.environ.get('CHROME_BRIDGE_HTTP_PORT', '19877'))
 RESPONSE_TIMEOUT = 30  # seconds
 
 # ── Shared State ─────────────────────────────────────────────────

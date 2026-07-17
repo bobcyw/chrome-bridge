@@ -2,7 +2,7 @@
 // Connects to local WebSocket server and executes browser commands
 // Version: 2.0 — added scroll/get_url/press_key/find_element, real screenshot, alarms keepalive
 
-const WS_URL = 'ws://127.0.0.1:9876';
+const WS_URL = 'ws://127.0.0.1:19876';
 let ws = null;
 let reconnectTimer = null;
 

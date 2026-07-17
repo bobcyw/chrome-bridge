@@ -26,17 +26,13 @@ python bridge/cli.py get_content
 ## Architecture
 
 ```
-chrome-bridge <cmd> ──file──▶ runtime/.bridge_cmd.json
-                                    │
-                         bridge/server.py (WebSocket, port 9876)
-                                    │
-                         Chrome Extension ◀─▶ Your Real Browser
+CLI / Python API ──HTTP POST :19877──▶ bridge/server.py ──WebSocket :19876──▶ Chrome Extension ──▶ Real Browser
 ```
 
-Three components work together:
+Three components:
 1. **Chrome Extension** (`extension/`) — executes commands inside the browser
-2. **Bridge Server** (`bridge/server.py`) — relays commands via WebSocket
-3. **CLI / Python API** (`bridge/cli.py`, `bridge/api.py`) — sends commands
+2. **Bridge Server** (`bridge/server.py`) — HTTP API + WebSocket relay, two ports
+3. **CLI / Python API** (`bridge/cli.py`, `bridge/api.py`) — sends commands via HTTP
 
 ## Command Reference
 

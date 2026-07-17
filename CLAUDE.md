@@ -9,11 +9,7 @@ You can control the **user's real Chrome browser** through the Chrome Bridge ext
 ### Architecture
 
 ```
-bridge/cli.py ──file IPC──▶ runtime/.bridge_cmd.json
-                                  │
-                       bridge/server.py (WebSocket :9876)
-                                  │
-                       Chrome Extension ◀─▶ Real Browser
+CLI / API ──HTTP POST :19877──▶ bridge/server.py ──WebSocket :19876──▶ Chrome Extension ──▶ Browser
 ```
 
 ### Prerequisites Check
@@ -24,15 +20,22 @@ Always verify the bridge is alive before attempting browser operations:
 python bridge/cli.py ping
 ```
 
-If `"pong": true` — server is running and extension is connected. Proceed.
+If `"ok": true, "pong": true` — server is running and extension is connected. Proceed.
 
-If timeout or no response:
+If "Cannot connect" — server isn't running. Start it:
 ```bash
-# Start the server
-python bridge/cli.py serve &
+python bridge/cli.py serve --background   # daemon mode
+# or: bash scripts/start_bridge.bat       # Windows double-click
 ```
 
-If "No Chrome extension connected" — ask the user to click the Chrome Bridge icon in the Chrome toolbar.
+If "No Chrome extension connected" — ask the user to:
+1. Open `chrome://extensions` in Chrome
+2. Ensure "Chrome Bridge" extension is loaded and enabled
+3. Click the extension icon in the toolbar to activate the service worker
+
+**Ports**: This version uses WS `19876` + HTTP `19877`. Override via env:
+- `CHROME_BRIDGE_WS_PORT` (default 19876)
+- `CHROME_BRIDGE_HTTP_PORT` (default 19877)
 
 ### Command Reference (all via CLI)
 

@@ -31,7 +31,8 @@ if sys.stderr.encoding != 'utf-8':
     sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
 # Bridge server HTTP endpoint
-BRIDGE_URL = os.environ.get('CHROME_BRIDGE_URL', 'http://127.0.0.1:9877/cmd')
+BRIDGE_HTTP_PORT = os.environ.get('CHROME_BRIDGE_HTTP_PORT', '19877')
+BRIDGE_URL = os.environ.get('CHROME_BRIDGE_URL', f'http://127.0.0.1:{BRIDGE_HTTP_PORT}/cmd')
 
 
 def send_cmd(cmd, **kwargs):
@@ -103,7 +104,8 @@ def parse_args(argv):
 HELP_TEXT = """Usage: chrome-bridge <cmd> [key=value ...]
 
 Server:
-  serve                                 - Start the WebSocket bridge server
+  serve                                 - Start the bridge server (foreground)
+  serve --background (-b)               - Start in background (daemon)
 
 Tab Management:
   new_tab     url=...                    - Open new tab
@@ -175,6 +177,37 @@ def main():
 
     # Built-in: serve — start the WebSocket bridge server
     if cmd == 'serve':
+        background = '--background' in sys.argv or '-b' in sys.argv
+        if background:
+            # Daemonize: detach from terminal and run in background
+            if sys.platform == 'win32':
+                # Windows: use pythonw to run without console
+                import subprocess
+                script = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'server.py')
+                subprocess.Popen(
+                    [sys.executable, '-u', script],
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                    creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0,
+                )
+            else:
+                # Unix: classic double-fork daemon
+                pid = os.fork()
+                if pid > 0:
+                    print(f"[*] Server started in background (PID: {pid})")
+                    sys.exit(0)
+                # Child: detach and run
+                os.setsid()
+                pid2 = os.fork()
+                if pid2 > 0:
+                    sys.exit(0)
+                # Grandchild: the actual server
+                sys.stdout = open(os.devnull, 'w')
+                sys.stderr = open(os.devnull, 'w')
+                from bridge.server import main as server_main
+                import asyncio
+                asyncio.run(server_main())
+            sys.exit(0)
+
         from bridge.server import main as server_main
         import asyncio
         try:

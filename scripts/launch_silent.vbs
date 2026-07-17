@@ -1,21 +1,38 @@
-' Chrome Bridge - Silent Launcher
-' Launches bridge_server.py without a console window
-'
-' EDIT THIS FILE to set your Python path before first use:
-'   1. Run "where python" in terminal to find your Python path
-'   2. Replace PYTHON_PATH below
-'   3. Replace PROJECT_DIR below with the path to this project
+' Chrome Bridge - Silent Launcher (Windows)
+' Auto-detects Python and launches server without a console window.
+' Place a shortcut to this file in your Startup folder for auto-start.
 
-Dim PYTHON_PATH, PROJECT_DIR, cmd
+Dim WshShell, pythonPath, projectDir, cmd, result
 
-' === CONFIGURE THESE PATHS ===
-PYTHON_PATH = "python"
-PROJECT_DIR = CreateObject("WScript.Shell").CurrentDirectory
-
-' === DO NOT EDIT BELOW ===
-cmd = PYTHON_PATH & " -u """ & PROJECT_DIR & "\bridge\server.py"" >> """ & PROJECT_DIR & "\runtime\server.log"" 2>&1"
-
-Dim WshShell
 Set WshShell = CreateObject("WScript.Shell")
-' Run hidden (0 = hide window, False = don't wait for exit)
-WshShell.Run cmd, 0, False
+
+' ── Get project directory (same folder as this script) ──
+projectDir = WshShell.CurrentDirectory
+If Right(projectDir, 7) = "scripts" Then
+    projectDir = Left(projectDir, Len(projectDir) - 7)
+End If
+
+' ── Try to find Python ──
+pythonPath = "python"  ' fallback
+
+' Try: where python
+On Error Resume Next
+Dim exec, output
+Set exec = WshShell.Exec("cmd /c where python 2>nul")
+output = exec.StdOut.ReadAll()
+If exec.ExitCode = 0 And output <> "" Then
+    pythonPath = Trim(Split(output, vbCrLf)(0))
+End If
+On Error Goto 0
+
+' ── Launch ──
+cmd = """" & pythonPath & """ -u """ & projectDir & "\bridge\server.py"" >> """ & projectDir & "\runtime\server.log"" 2>&1"
+
+Dim fso
+Set fso = CreateObject("Scripting.FileSystemObject")
+If Not fso.FolderExists(projectDir & "\runtime") Then
+    fso.CreateFolder projectDir & "\runtime")
+End If
+
+' Run hidden: 0 = hide window, False = don't wait
+WshShell.Run "cmd /c " & cmd, 0, False

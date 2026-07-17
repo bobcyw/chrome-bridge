@@ -10,10 +10,10 @@ class TestConstants:
     """Verify server configuration."""
 
     def test_ws_port(self):
-        assert server.WS_PORT == 9876
+        assert server.WS_PORT == 19876
 
     def test_http_port(self):
-        assert server.HTTP_PORT == 9877
+        assert server.HTTP_PORT == 19877
 
     def test_response_timeout(self):
         assert server.RESPONSE_TIMEOUT == 30
